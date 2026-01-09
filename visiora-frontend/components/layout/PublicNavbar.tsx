@@ -47,7 +47,7 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
             <div className="px-4 sm:px-6 md:px-10 py-3 max-w-[1440px] mx-auto flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/?view=landing" className="flex items-center gap-2">
-                    <img src="/logo.png" alt="Visiora Logo" className="h-7 sm:h-8 w-auto" />
+                    <img src="/logo.png" alt="Visiora Logo" className="h-9 sm:h-10 w-auto" />
                     <h2 className="text-slate-900 dark:text-white text-base sm:text-lg font-bold leading-tight tracking-tight">Visiora</h2>
                 </Link>
 
@@ -83,14 +83,14 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
                         <div className="relative">
                             <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors border border-teal-100 dark:border-teal-800"
+                                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-white/20 transition-all duration-300 border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_rgba(20,184,166,0.15)] dark:hover:shadow-[0_8px_32px_rgba(20,184,166,0.2)] hover:border-teal-200/50 dark:hover:border-teal-400/30"
                             >
-                                <div className="size-6 sm:size-7 bg-teal-500 rounded-full flex items-center justify-center">
-                                    <span className="text-[10px] sm:text-xs font-bold text-white">
+                                <div className="size-7 sm:size-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md shadow-teal-500/30">
+                                    <span className="text-xs sm:text-sm font-bold text-white">
                                         {user.fullName.charAt(0).toUpperCase()}
                                     </span>
                                 </div>
-                                <span className="text-sm font-medium text-slate-700 dark:text-gray-300 hidden sm:block max-w-[100px] truncate">
+                                <span className="text-sm font-medium text-slate-700 dark:text-gray-200 hidden sm:block max-w-[100px] truncate">
                                     {user.fullName}
                                 </span>
                                 <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-gray-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />

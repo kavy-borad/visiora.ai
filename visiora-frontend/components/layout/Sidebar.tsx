@@ -27,7 +27,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             {/* Logo */}
             <div className="h-16 flex items-center px-6 shrink-0">
                 <Link href="/?view=landing" className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="Visiora Logo" className="h-9 w-auto" />
+                    <img src="/logo.png" alt="Visiora Logo" className="h-11 w-auto" />
                     <div className="flex flex-col">
                         <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">Visiora</h1>
                     </div>
