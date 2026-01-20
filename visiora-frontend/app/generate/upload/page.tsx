@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useRouter } from "@/components/useRouter";
+import { useRouter } from "next/navigation";
 import {
     ArrowRight,
     ArrowLeft,
@@ -12,15 +12,20 @@ import {
     Loader2,
     X,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { generateApi } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
+import { navigationState } from "@/lib/navigationState";
 
 
 
 export default function UploadPage() {
     const router = useRouter();
+
+
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Upload state
@@ -149,6 +154,10 @@ export default function UploadPage() {
 
             // Check generate type and route accordingly
             const generateType = localStorage.getItem('generateType');
+
+            // Signal next page to show loader
+            navigationState.shouldShowLoader = true;
+
             if (generateType === 'batch_image') {
                 // E-commerce bundle: go to options page
                 router.push('/generate/ecommerce-options');
@@ -166,6 +175,44 @@ export default function UploadPage() {
 
 
 
+
+    // Page transition loader
+    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
+
+    useEffect(() => {
+        // If loader is active, turn it off after delay
+        if (isPageLoading) {
+            const timer = setTimeout(() => {
+                setIsPageLoading(false);
+            }, 800);
+
+            // Reset state for future navigations
+            navigationState.shouldShowLoader = false;
+
+            return () => clearTimeout(timer);
+        } else {
+            // Ensure state is reset even if no loader
+            navigationState.shouldShowLoader = false;
+        }
+    }, [isPageLoading]);
+
+
+
+    if (isPageLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
+                <motion.div
+                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
@@ -353,13 +400,16 @@ export default function UploadPage() {
                     {/* Navigation Buttons - Fixed Footer */}
                     <div className="shrink-0 px-5 py-2 bg-[#f8fafc] dark:bg-gray-900">
                         <div className="flex items-center justify-between">
-                            <Link
-                                href="/generate"
+                            <button
+                                onClick={() => {
+                                    navigationState.shouldShowLoader = true;
+                                    router.push("/generate");
+                                }}
                                 className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                                 Back
-                            </Link>
+                            </button>
                             <button
                                 onClick={handleNextStep}
                                 disabled={isSubmitting}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useRouter } from "@/components/useRouter";
+import { useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     Sparkles,
@@ -21,10 +21,12 @@ import {
     Menu,
     Loader2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
+import { navigationState } from "@/lib/navigationState";
 
 export default function GenerateImagesPage() {
     const router = useRouter();
@@ -68,32 +70,73 @@ export default function GenerateImagesPage() {
 
     const handleNextStep = async () => {
         setIsSubmitting(true);
-        try {
-            // Save selection to session (optional - for backend tracking)
-            // await generateApi.saveGenerationType(selectedType);
 
-            // Store in localStorage for client-side navigation
-            localStorage.setItem('generateType', selectedType);
+        // Use setTimeout to allow the UI to repaint with the loader BEFORE interfering with the main thread
+        // preventing the "stuck" feeling and ensuring the animation starts smoothly.
+        setTimeout(() => {
+            try {
+                localStorage.setItem('generateType', selectedType);
 
-            // Navigate to upload page for both types
-            // Upload page will redirect to appropriate next step based on type
-            router.push('/generate/upload');
-        } catch (error) {
-            console.warn('Failed to save generation type:', error);
-            // Still navigate even if API fails
-            localStorage.setItem('generateType', selectedType);
-            if (selectedType === 'batch_image') {
-                router.push('/generate/ecommerce-options');
-            } else {
+                // Signal the next page to show the loader
+                navigationState.shouldShowLoader = true;
+
+                // Navigate to upload page for both types
                 router.push('/generate/upload');
+
+                // NOTE: We do NOT set isSubmitting(false) here. 
+                // We want the loader to persist until the page unmounts/transitions to avoid flicker.
+            } catch (error) {
+                console.warn('Failed to save generation type:', error);
+
+                // Only reset loading if there's a genuine error preventing navigation
+                // But since we try to fallback-navigate, we might still want to keep it true.
+                // For safety vs stuck state:
+                // If router.push fails, it throws.
+
+                localStorage.setItem('generateType', selectedType);
+                if (selectedType === 'batch_image') {
+                    router.push('/generate/ecommerce-options');
+                } else {
+                    router.push('/generate/upload');
+                }
+                // Only turn off if we are absolutely sure navigation is aborted, but here we assume navigation continues.
             }
-        } finally {
-            setIsSubmitting(false);
-        }
+        }, 50);
     };
 
     // User credits display values (fallback if API not available)
 
+
+    // Page transition loader
+    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
+
+    useEffect(() => {
+        if (isPageLoading) {
+            const timer = setTimeout(() => {
+                setIsPageLoading(false);
+            }, 800);
+            navigationState.shouldShowLoader = false;
+            return () => clearTimeout(timer);
+        } else {
+            navigationState.shouldShowLoader = false;
+        }
+    }, [isPageLoading]);
+
+    if (isPageLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
+                <motion.div
+                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
@@ -250,7 +293,7 @@ export default function GenerateImagesPage() {
                                     <span className="relative z-10 flex items-center gap-2">
                                         {isSubmitting ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
                                                 Processing...
                                             </>
                                         ) : (

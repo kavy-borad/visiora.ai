@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useRouter } from "@/components/useRouter";
+import { useRouter } from "next/navigation";
 import {
     ChevronDown,
     ArrowLeft,
@@ -17,17 +17,19 @@ import {
     Plus,
     ShoppingBag,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { generateApi, GenerateFormData, Category, ModelPreset, BundleOptionsPayload } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 import AILoader from "@/components/AILoader";
+import { navigationState } from "@/lib/navigationState";
 
 // Fallback model presets when API fails
 const fallbackModelPresets: ModelPreset[] = [
-    { id: "f_professional", name: "Professional Woman", description: "Natural-looking professional woman for business wear", prompt_description: "", gender: "female", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuAoJOWZv8vNa6RFDGdXaIvLaH1_pdkuYu-Agf7KHBV7dZLL6lcg3dEQbFGXKIlQS8k254SLSMQmiUvXsfxyiyDIShg3_S6o7I3rlYsqBKUCj0VB_EMEh1TtDXrCHQ2qPuJBNBAlw608JzNFmmiHNT23G9GauVMPNytrEt2AeIBiMWrVSotyFe9LHsUqOn6t6aFqPb2D7o50F3IXGSt3vaBD8clHz2Y-RHF2ndjeX1nOgYAyCbzu3eIVNWJemxHa-bj9mZ80mTFKQGcp" },
-    { id: "m_professional", name: "Professional Man", description: "Natural-looking professional man for business wear", prompt_description: "", gender: "male", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9rDTml0LTJBFVE5t-U0Omqgfb3Tw_BE6o52TdSubE-ysc2NDMpXscqBfiyX2KhpE4RoQ6kBC_Dj2vXNAi_fu_xtmOkXF6EM-fAPGHyaHdbCY9wbfrpGtB--He0zEzAFos5unfLFbQZ2V7kYoSytJIvUrjKL3kKOKdxJHfKr32yJtZUnWg_INO1zRvni1fcNR4nPd66JVMNwnvLhtySvbEFZrz8oqbqn-FausNQF0ldgK9O-tvkJWojn698Nu5EXkW2GRm2dnNA-" },
-    { id: "f_casual", name: "Casual Woman", description: "Natural casual woman for everyday wear", prompt_description: "", gender: "female", age_range: "young", style: "casual", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuD9ACO1yIxW2Q7hu0tsE3eHwUUyjVdJ3HyZErsD7Ap3NW63vnNqc8gOdANW1nzeQVqympPmOP2inFzBfiXvwhVGE3xpqCC1irVol8sqcNER4J-SZyXKkJDH3nNE8b2i_PkFaHMI-Hx9D0fjiEAm8dy4rzuJsRf7Zng4ZKT-oa7BjWqQF5CofzFaMSlBuoMUlJQOy3x92VoZ4R0oYRHLXUUv1wmYczzDtfp5A4PFZE2L1XvSmtqI8m4aEM2I8r8jHvsFZvvGnOiWHGwr" },
+    { id: "f_professional", name: "Professional Woman", description: "Natural-looking professional woman for business wear", prompt_description: "", gender: "female", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuAoJOWZv8vNa6RFDGdXnIvLaH1_pdkuYu-Agf7KHBV7dZLL6lcg3dEQbFGXKIlQS8k254SLSMGmiUvXsfxyiyDIShg3_S6o7I3rlYsqBKUCj0VB_EMEh1TtDXrCHQ2qPuJBNBAlw608JzNFnmiHNT23G9GauVMPNytrEt2AeIBiMWrVSotyFe9LHsUqOn6t6aFqPb2D7o50F3IXGSt3vaBD8clHz2Y-RHF2ndjeX1nOgYAyCbzu3eIVNWJemxHa-bj9mZ80mTFKQGcp" },
+    { id: "m_professional", name: "Professional Man", description: "Natural-looking professional man for business wear", prompt_description: "", gender: "male", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9rDTml0LTJBFVE5t-U0Omgfb3Tw_BE6o52TdSubE-ysc2NDMpXscqBfiyX2KhpE4RoQ6kBC_Dj2vXNAi_fu_xtmOkXF6EM-fAPGHyaHdbCY9wbfrpGtB--He0zEzAFos5unfLFbQZ2V7kYoSytJIvUrjKL3kKOKdxJHfKr32yJtZUnWg_INO1zRvni1fcNR4nPd66JVMNwnvLhtySvbEFZrz8oqbqn-FausNQF0ldgK9O-tvkJWojn698Nu5EXkW2GRm2dnNA-" },
+    { id: "f_casual", name: "Casual Woman", description: "Natural casual woman for everyday wear", prompt_description: "", gender: "female", age_range: "young", style: "casual", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuD9ACO1yIxW2Q7hu0tsE3eHwUUyjVd3HyZErsD7Ap3NW63vnNqc8gOdANW1nzeQVqympPmOP2inFzBfiXvwhVGE3xpqCC1irVol8sqcNER4J-SZyXKkJDH3nNE8b2i_PkFaHMI-Hx9D0fjiEAm8dy4rzuJsRf7Zng4ZKT-oa7BjWqQF5CofzFaMSlBuoMUlJQOy3x92VoZ4R0oYRHLXUUv1wmYczzDtfp5A4PFZE2L1XvSmtqI8m4aEM2I8r8jHvsFZvvGnOiWHGwr" },
     { id: "m_athletic", name: "Athletic Man", description: "Natural fit man for sports and fitness wear", prompt_description: "", gender: "male", age_range: "young", style: "athletic", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1u8i7swl0DmbulakI3kpCNdVj7fB698D3HvZ_xJESOKhpQaYDaUNljdmhCvBCgWQ5XkV9oemtOMlPedi_cxlTr1Ec01YU4ytL0Pfzlg__0ERYd0znaAyjeTyIen3w4zaMUwW38VaAT5aaGg0pzAVeLmFGhu_gYQOXRKOg-Gf2EWxKsWZDB6nkY7O3aGrjB3jNlfeAlweHLdEIKlDr4ylvItyL_FHfrnySOHlrFVtk1NIu0n817Dc7E5MPGfVnIz0gcWHcG5_zRevL" },
 ];
 
@@ -82,7 +84,22 @@ export default function DetailsPage() {
     const [genderFilter, setGenderFilter] = useState<'female' | 'male' | 'unisex' | 'all'>('all');
     const [styleFilter, setStyleFilter] = useState<'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all'>('all');
 
-    // Load generation type and uploaded image from previous step
+
+    // Page transition loader
+    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
+
+    useEffect(() => {
+        if (isPageLoading) {
+            const timer = setTimeout(() => {
+                setIsPageLoading(false);
+            }, 800);
+            navigationState.shouldShowLoader = false;
+            return () => clearTimeout(timer);
+        } else {
+            navigationState.shouldShowLoader = false;
+        }
+    }, [isPageLoading]);
+
     // Load ecommerce bundle options from localStorage (for batch_image)
     const [savedBundleOptions, setSavedBundleOptions] = useState<any>(null);
 
@@ -329,6 +346,24 @@ export default function DetailsPage() {
 
 
 
+
+
+    if (isPageLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
+                <motion.div
+                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
+            </div>
+        );
+    }
+
     return (
         <>
             {/* AI Loader - Shows when generating */}
@@ -451,14 +486,14 @@ export default function DetailsPage() {
                                                     <select
                                                         value={businessCategory}
                                                         onChange={(e) => setBusinessCategory(e.target.value)}
-                                                        className="w-full h-[52px] pl-3 pr-8 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 appearance-none text-sm font-medium cursor-pointer shadow-sm hover:shadow-md transition-all"
+                                                        className="w-full h-[52px] pl-3 pr-10 rounded-lg bg-white dark:bg-gray-700 border border-teal-200 dark:border-gray-600 text-teal-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 appearance-none text-sm font-medium cursor-pointer shadow-sm hover:shadow-md transition-all"
                                                     >
                                                         <option value="">Select category...</option>
                                                         {displayCategories.map((cat) => (
                                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                         ))}
                                                     </select>
-                                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-500 pointer-events-none" />
+                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
                                                 </div>
                                             </div>
 
@@ -483,7 +518,7 @@ export default function DetailsPage() {
                                         {(generationType !== 'batch_image' && displayCategories.find(c => c.id === businessCategory)?.show_model) && (
                                             <div className="md:flex-1 md:min-h-0 flex flex-col gap-2">
                                                 {/* Branding Info Row - Compact */}
-                                                <div className="shrink-0 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 border border-gray-200 dark:border-gray-600">
+                                                <div className="shrink-0 bg-gray-50 mt-4 dark:bg-gray-700/50 rounded-lg p-2 border border-gray-200 dark:border-gray-600">
                                                     <div className="flex items-center gap-2 mb-1.5">
                                                         <Briefcase className="w-3 h-3 text-gray-400" />
                                                         <h3 className="text-[11px] font-bold text-gray-900 dark:text-white">Additional Branding Info</h3>
@@ -558,28 +593,34 @@ export default function DetailsPage() {
                                                         </div>
                                                         {/* Filter Dropdowns - Professional Teal Theme */}
                                                         <div className="flex items-center gap-2">
-                                                            <select
-                                                                value={genderFilter}
-                                                                onChange={(e) => setGenderFilter(e.target.value as 'female' | 'male' | 'unisex' | 'all')}
-                                                                className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                                                            >
-                                                                <option value="all">All Genders</option>
-                                                                <option value="female">Female</option>
-                                                                <option value="male">Male</option>
-                                                                <option value="unisex">Unisex</option>
-                                                            </select>
-                                                            <select
-                                                                value={styleFilter}
-                                                                onChange={(e) => setStyleFilter(e.target.value as 'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all')}
-                                                                className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                                                            >
-                                                                <option value="all">All Styles</option>
-                                                                <option value="professional">Professional</option>
-                                                                <option value="casual">Casual</option>
-                                                                <option value="athletic">Athletic</option>
-                                                                <option value="elegant">Elegant</option>
-                                                                <option value="diverse">Diverse</option>
-                                                            </select>
+                                                            <div className="relative">
+                                                                <select
+                                                                    value={genderFilter}
+                                                                    onChange={(e) => setGenderFilter(e.target.value as 'female' | 'male' | 'unisex' | 'all')}
+                                                                    className="h-8 text-xs pl-3 pr-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer appearance-none"
+                                                                >
+                                                                    <option value="all">All Genders</option>
+                                                                    <option value="female">Female</option>
+                                                                    <option value="male">Male</option>
+                                                                    <option value="unisex">Unisex</option>
+                                                                </select>
+                                                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
+                                                            </div>
+                                                            <div className="relative">
+                                                                <select
+                                                                    value={styleFilter}
+                                                                    onChange={(e) => setStyleFilter(e.target.value as 'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all')}
+                                                                    className="h-8 text-xs pl-3 pr-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer appearance-none"
+                                                                >
+                                                                    <option value="all">All Styles</option>
+                                                                    <option value="professional">Professional</option>
+                                                                    <option value="casual">Casual</option>
+                                                                    <option value="athletic">Athletic</option>
+                                                                    <option value="elegant">Elegant</option>
+                                                                    <option value="diverse">Diverse</option>
+                                                                </select>
+                                                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -651,7 +692,7 @@ export default function DetailsPage() {
 
                                         {(generationType === 'batch_image' || !displayCategories.find(c => c.id === businessCategory)?.show_model) && (
                                             <div className="md:flex-1 md:min-h-0 flex flex-col mt-4">
-                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600 md:flex-1 flex flex-col">
+                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl mt-4 border border-gray-200 dark:border-gray-600 md:flex-1 flex flex-col">
                                                     <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                                         <Briefcase className="w-4 h-4 text-gray-400" />
                                                         Additional Branding Info
@@ -730,13 +771,16 @@ export default function DetailsPage() {
                                 </div>
                             )}
                             <div className="flex items-center justify-between">
-                                <Link
-                                    href="/generate/upload"
+                                <button
+                                    onClick={() => {
+                                        navigationState.shouldShowLoader = true;
+                                        router.push("/generate/upload");
+                                    }}
                                     className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Back
-                                </Link>
+                                </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
