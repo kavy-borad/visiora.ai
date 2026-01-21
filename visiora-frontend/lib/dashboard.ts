@@ -94,7 +94,7 @@ export const dashboardApi = {
             else if (data.free_credits !== undefined) freeCredits = data.free_credits;
 
             // Get maxFreeCredits dynamically from API
-            let maxFreeCredits = 1; // Default fallback
+            let maxFreeCredits = 11; // Default fallback (user's max is 11)
             if (data.overview?.maxFreeCredits !== undefined) maxFreeCredits = data.overview.maxFreeCredits;
             else if (data.overview?.max_free_credits !== undefined) maxFreeCredits = data.overview.max_free_credits;
             else if (data.header?.maxFreeCredits !== undefined) maxFreeCredits = data.header.maxFreeCredits;
@@ -180,7 +180,7 @@ export const dashboardApi = {
             }
 
             // Get maxFreeCredits dynamically
-            const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 1;
+            const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 11;
 
             const stats: DashboardStats = {
                 totalImages: data.totalImages ?? 0,
@@ -225,7 +225,7 @@ export const dashboardApi = {
             }
 
             // Get maxFreeCredits dynamically
-            const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 1;
+            const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 11;
 
             const stats: DashboardStats = {
                 totalImages: data.totalImages ?? 0,
@@ -349,25 +349,53 @@ export const dashboardApi = {
     getCharts: async (): Promise<ApiResponse<{ imageGeneration: ChartDataPoint[]; spending: ChartDataPoint[] }>> => {
         try {
             const res = await api.get('/dashboard/charts');
+            console.log('🔍 RAW /dashboard/charts response:', JSON.stringify(res.data, null, 2));
             const data = res.data?.data || res.data || {};
 
-            // Helper mapping function
-            const mapChart = (list: any[]) => Array.isArray(list) ? list.map((d: any) => ({
-                day: d?.date || d?.day || '',
-                value: (d?.paid !== undefined && d?.free !== undefined) ? (d.paid + d.free) : (d?.value ?? d?.count ?? 0),
-                paid: d?.paid ?? 0,
-                free: d?.free ?? 0
-            })) : [];
+            // Helper function to format date as "M 14" (day abbreviation + date)
+            const formatDateLabel = (dateStr: string): string => {
+                if (!dateStr) return '';
+                try {
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return dateStr;
+                    const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                    const dayAbbr = dayNames[date.getDay()];
+                    const dayNum = date.getDate();
+                    return `${dayAbbr} ${dayNum}`;
+                } catch {
+                    return dateStr;
+                }
+            };
+
+            // Helper mapping function with date formatting
+            const mapChart = (list: any[]) => Array.isArray(list) ? list.map((d: any) => {
+                const rawDate = d?.date || d?.day || '';
+                return {
+                    day: formatDateLabel(rawDate),
+                    value: (d?.paid !== undefined && d?.free !== undefined) ? (d.paid + d.free) : (d?.value ?? d?.count ?? 0),
+                    paid: d?.paid ?? 0,
+                    free: d?.free ?? 0
+                };
+            }) : [];
 
             // Robustly find the chart arrays
             const imgData = data.imageGeneration || data.dailyImageGeneration?.data || data.dailyImageGeneration || [];
             const spendData = data.spending || data.dailySpending?.data || data.dailySpending || [];
 
+            console.log('🔍 Parsed imgData:', imgData);
+            console.log('🔍 Parsed spendData:', spendData);
+
+            const mappedImg = mapChart(imgData);
+            const mappedSpend = mapChart(spendData);
+
+            console.log('📊 Mapped Image Generation:', mappedImg);
+            console.log('📊 Mapped Spending:', mappedSpend);
+
             return {
                 success: true,
                 data: {
-                    imageGeneration: mapChart(imgData),
-                    spending: mapChart(spendData)
+                    imageGeneration: mappedImg,
+                    spending: mappedSpend
                 }
             };
         } catch (err: any) {

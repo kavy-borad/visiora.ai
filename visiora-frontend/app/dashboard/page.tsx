@@ -324,7 +324,7 @@ export default function DashboardPage() {
         ? spendingChartData.map(d => d.value)
         : Array(7).fill(0);
     const chartDays = spendingChartData.length > 0
-        ? spendingChartData.map(d => d.day.charAt(0).toUpperCase())
+        ? spendingChartData.map(d => d.day)
         : ["M", "T", "W", "T", "F", "S", "S"];
 
     // Line chart data from API or zero fallback
@@ -405,8 +405,8 @@ export default function DashboardPage() {
 
                         {/* Charts Row */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:flex-1 lg:min-h-0">
-                            {/* Area Chart */}
-                            <div className="opacity-0 animate-fade-in bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[160px] sm:h-[180px] lg:h-auto hover:shadow-md transition-shadow duration-300">
+                            {/* Area Chart - Fixed Y-axis scale 0-100 */}
+                            <div className="opacity-0 animate-fade-in bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-auto hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center justify-between mb-3 shrink-0">
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Image Generation</h3>
                                     <select className="text-[10px] border border-slate-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5 outline-none focus:border-teal-500">
@@ -414,37 +414,31 @@ export default function DashboardPage() {
                                     </select>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
-                                    {/* Y-axis labels - dynamic based on max value with headroom */}
-                                    {(() => {
-                                        const maxVal = Math.max(...lineChartPoints, 1);
-                                        // Add 15% headroom for professional look (match chart scaling)
-                                        const topLabel = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
-                                        return (
-                                            <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                                <span>{topLabel}</span>
-                                                <span>{Math.round(topLabel / 2)}</span>
-                                                <span>0</span>
-                                            </div>
-                                        );
-                                    })()}
+                                    {/* Y-axis labels - Fixed scale: 0, 20, 40, 60, 80, 100 */}
+                                    <div className="absolute left-0 top-0 bottom-4 w-8 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
+                                        <span>100</span>
+                                        <span>80</span>
+                                        <span>60</span>
+                                        <span>40</span>
+                                        <span>20</span>
+                                        <span>0</span>
+                                    </div>
                                     {/* Chart area */}
-                                    <div className="ml-7 h-full flex flex-col">
+                                    <div className="ml-9 h-full flex flex-col">
                                         <div className="flex-1 relative">
-                                            {/* Minimal grid lines */}
+                                            {/* Grid lines for fixed scale */}
                                             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                                                {[0, 1, 2].map((i) => (
-                                                    <div key={i} className="border-t border-slate-100/80 w-full" />
+                                                {[0, 1, 2, 3, 4, 5].map((i) => (
+                                                    <div key={i} className="border-t border-slate-100 dark:border-gray-700/50 w-full" />
                                                 ))}
                                             </div>
-                                            {/* SVG Area Chart with smooth curves */}
-                                            {/* Dynamic Path Generation with dynamic scaling */}
+                                            {/* SVG Area Chart - Fixed 100 max scale */}
                                             {(() => {
-                                                const maxVal = Math.max(...lineChartPoints, 1);
-                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+                                                const FIXED_MAX = 100; // Fixed scale max
 
                                                 const points = lineChartPoints.map((val, i) => {
                                                     const x = (i / (lineChartPoints.length - 1)) * 100;
-                                                    const normalizedVal = (val / scaleMax) * 100;
+                                                    const normalizedVal = Math.min((val / FIXED_MAX) * 100, 100); // Cap at 100%
                                                     const y = 100 - normalizedVal;
                                                     return `${x},${y}`;
                                                 });
@@ -468,16 +462,17 @@ export default function DashboardPage() {
                                                     </svg>
                                                 );
                                             })()}
-                                            {/* Data points - Jelly only on direct point hover */}
+                                            {/* Data points with hover tooltip */}
                                             {(() => {
-                                                const maxVal = Math.max(...lineChartPoints, 1);
-                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+                                                const FIXED_MAX = 100;
 
                                                 return (
                                                     <div className="absolute inset-0">
                                                         {lineChartPoints.map((p, i) => {
-                                                            const normalizedPercent = (p / scaleMax) * 100;
+                                                            const normalizedPercent = Math.min((p / FIXED_MAX) * 100, 100);
                                                             const xPercent = lineChartPoints.length > 1 ? (i / (lineChartPoints.length - 1)) * 100 : 50;
+                                                            // Get date for tooltip
+                                                            const dayLabel = lineChartDays[i] || '';
                                                             return (
                                                                 <div
                                                                     key={i}
@@ -488,9 +483,10 @@ export default function DashboardPage() {
                                                                         transform: 'translate(-50%, -50%)'
                                                                     }}
                                                                 >
-                                                                    <div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-pointer transition-all group-hover:scale-125 group-hover:shadow-md group-hover:animate-[jelly_1s_ease-in-out_infinite]" />
-                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-7 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap">
-                                                                        {p} images
+                                                                    <div className="w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-pointer transition-all group-hover:scale-150 group-hover:shadow-md" />
+                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[10px] font-medium px-2 py-1.5 rounded shadow-lg whitespace-nowrap">
+                                                                        <div className="font-semibold">{dayLabel}</div>
+                                                                        <div>Generated Images: {p}</div>
                                                                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                                     </div>
                                                                 </div>
@@ -501,18 +497,18 @@ export default function DashboardPage() {
                                             })()}
 
                                         </div>
-                                        {/* X-axis labels */}
+                                        {/* X-axis labels - Day + Date format */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">
                                             {lineChartDays.map((day, i) => (
-                                                <span key={i}>{day}</span>
+                                                <span key={i} className="text-center">{day}</span>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Bar Chart - Enhanced */}
-                            <div className="opacity-0 animate-fade-in-delay bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[160px] sm:h-[180px] lg:h-auto hover:shadow-md transition-shadow duration-300">
+                            {/* Bar Chart - Fixed Y-axis scale 0-100 */}
+                            <div className="opacity-0 animate-fade-in-delay bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-auto hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center justify-between mb-3 shrink-0">
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Spending</h3>
                                     <div className="flex items-center gap-3 text-[9px]">
@@ -527,38 +523,39 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
-                                    {/* Y-axis labels - dynamic based on max value */}
-                                    {(() => {
-                                        const maxVal = Math.max(...chartData, 1);
-                                        // Add 15% headroom for professional look
-                                        const topLabel = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
-                                        return (
-                                            <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                                <span>${topLabel}</span>
-                                                <span>${Math.round(topLabel / 2)}</span>
-                                                <span>$0</span>
-                                            </div>
-                                        );
-                                    })()}
+                                    {/* Y-axis labels - Fixed scale: $0, $20, $40, $60, $80, $100 */}
+                                    <div className="absolute left-0 top-0 bottom-4 w-8 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
+                                        <span>$100</span>
+                                        <span>$80</span>
+                                        <span>$60</span>
+                                        <span>$40</span>
+                                        <span>$20</span>
+                                        <span>$0</span>
+                                    </div>
                                     {/* Chart area */}
-                                    <div className="ml-7 h-full flex flex-col">
-                                        <div className="flex-1 flex items-end justify-between gap-2">
+                                    <div className="ml-9 h-full flex flex-col">
+                                        <div className="flex-1 flex items-end justify-between gap-2 relative">
+                                            {/* Grid lines for fixed scale */}
+                                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                                                {[0, 1, 2, 3, 4, 5].map((i) => (
+                                                    <div key={i} className="border-t border-slate-100 dark:border-gray-700/50 w-full" />
+                                                ))}
+                                            </div>
                                             {(() => {
-                                                // Calculate max for dynamic scaling with 15% headroom
-                                                const maxVal = Math.max(...chartData, 1);
-                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+                                                const FIXED_MAX = 100; // Fixed scale max
 
                                                 return chartData.map((height, i) => {
                                                     // Get detailed split from real data if available
                                                     const dataPoint = spendingChartData[i];
                                                     const paidHeight = dataPoint ? (dataPoint.paid ?? 0) : 0;
                                                     const freeHeight = dataPoint ? (dataPoint.free ?? 0) : 0;
+                                                    const dayLabel = chartDays[i] || '';
 
-                                                    // Normalize height to percentage of scaleMax
-                                                    const normalizedHeight = (height / scaleMax) * 100;
+                                                    // Normalize height to percentage of FIXED_MAX (cap at 100%)
+                                                    const normalizedHeight = Math.min((height / FIXED_MAX) * 100, 100);
 
                                                     return (
-                                                        <div key={i} className="flex-1 flex flex-col justify-end h-full group cursor-pointer relative animate-grow-up origin-bottom" style={{ animationDelay: `${i * 0.1}s` }}>
+                                                        <div key={i} className="flex-1 flex flex-col justify-end h-full group cursor-pointer relative z-10 animate-grow-up origin-bottom" style={{ animationDelay: `${i * 0.1}s` }}>
                                                             {/* Stacked bar container */}
                                                             <div className="w-full flex flex-col justify-end" style={{ height: `${normalizedHeight}%` }}>
                                                                 {/* Free segment (top) */}
@@ -575,15 +572,17 @@ export default function DashboardPage() {
                                                                 )}
                                                             </div>
                                                             {/* Hover tooltip */}
-                                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap">
-                                                                ${height}
+                                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-slate-800 text-white text-[10px] font-medium px-2 py-1.5 rounded shadow-lg whitespace-nowrap">
+                                                                <div className="font-semibold">{dayLabel}</div>
+                                                                <div>Total: ${height}</div>
+                                                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                             </div>
                                                         </div>
                                                     );
                                                 });
                                             })()}
                                         </div>
-                                        {/* X-axis labels */}
+                                        {/* X-axis labels - Day + Date format */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">
                                             {chartDays.map((day, i) => (
                                                 <span key={i} className="flex-1 text-center">{day}</span>

@@ -15,11 +15,7 @@ import {
 } from "lucide-react";
 import { galleryApi, GalleryImage, GalleryFilters, GalleryPagination, GalleryStats } from "@/lib/gallery";
 import { Sidebar, Header } from "@/components/layout";
-import { motion } from "framer-motion";
-
-// Module-level flag to prevent duplicate API calls in Strict Mode
-// This persists across component re-mounts
-let galleryInitialFetchDone = false;
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function GalleryPage() {
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -33,7 +29,7 @@ export default function GalleryPage() {
     const [images, setImages] = useState<GalleryImage[]>([]);
     const [pagination, setPagination] = useState<GalleryPagination | null>(null);
     const [stats, setStats] = useState<GalleryStats | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Start with loading true
     const [error, setError] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -51,28 +47,25 @@ export default function GalleryPage() {
     // Ref to skip search on first render
     const isSearchMounted = useRef(false);
 
-    // Fetch images and stats on mount - ONLY ONCE
+    // Ref to track if initial fetch has been done (within component lifecycle)
+    const hasFetched = useRef(false);
+
+    // Fetch images and stats on mount
     useEffect(() => {
-        // Skip if already fetched (module-level check)
-        if (galleryInitialFetchDone) {
-            console.log('⏭️ Gallery: Already fetched (module check), skipping');
+        // Use ref to prevent double fetch in Strict Mode
+        if (hasFetched.current) {
+            console.log('⏭️ Gallery: Already fetched this mount cycle, skipping');
             return;
         }
 
-        galleryInitialFetchDone = true;
+        hasFetched.current = true;
         console.log('🚀 Gallery: Initial fetch starting...');
 
         // Fetch both images and stats
         fetchGalleryImages();
         fetchGalleryStats();
 
-        // Reset on unmount (for page navigation scenarios)
-        return () => {
-            // Reset after a delay to handle strict mode vs real unmount
-            setTimeout(() => {
-                galleryInitialFetchDone = false;
-            }, 100);
-        };
+        // No cleanup needed - ref resets naturally on unmount
     }, []);
 
     // Debounce search input - skip first render
@@ -189,24 +182,28 @@ export default function GalleryPage() {
     };
 
     const handleDownload = async (id: string, src: string, alt: string) => {
-        try {
-            // Fetch the image and download it
-            const imageResponse = await fetch(src);
-            const blob = await imageResponse.blob();
-
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${alt.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'image'}_${id}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.warn('Download failed, opening in new tab:', error);
-            window.open(src, '_blank');
+        if (!src) {
+            console.error('No image source provided');
+            return;
         }
+
+        const filename = `${(alt || 'visiora_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
+
+        console.log('⬇️ Download requested:', { id, src, filename });
+
+        // Use local API proxy to bypass CORS
+        const proxyUrl = `/api/download?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(filename)}`;
+
+        // Create invisible link and trigger download
+        const link = document.createElement('a');
+        link.href = proxyUrl;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        console.log('✅ Download triggered via proxy');
     };
 
     const handleCopyPrompt = async (id: string, prompt: string) => {
@@ -355,38 +352,19 @@ export default function GalleryPage() {
         }
     };
 
-    // View image details - calls GET /api/gallery/{id}
-    const handleViewImage = async (id: string) => {
-        // Prevent duplicate calls
-        if (loadingImageId === id) return;
+    // View image details - opens modal with full image
+    const handleViewImage = (id: string) => {
+        console.log('👁️ Opening image:', id);
 
-        setLoadingImageId(id);
-        try {
-            const response = await galleryApi.getImage(id);
+        // Find image in local state
+        const image = images.find(img => img.id === id);
 
-            if (response.success && response.data) {
-                setSelectedImage(response.data);
-                setShowImageModal(true);
-            } else {
-                // Fallback: use local data if API fails
-                const localImage = images.find(img => img.id === id);
-                if (localImage) {
-                    setSelectedImage(localImage);
-                    setShowImageModal(true);
-                } else {
-                    console.error('Failed to load image details:', response.error);
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching image details:', error);
-            // Fallback to local data
-            const localImage = images.find(img => img.id === id);
-            if (localImage) {
-                setSelectedImage(localImage);
-                setShowImageModal(true);
-            }
-        } finally {
-            setLoadingImageId(null);
+        if (image) {
+            setSelectedImage(image);
+            setShowImageModal(true);
+            console.log('✅ Modal opened for image:', image.filename);
+        } else {
+            console.error('❌ Image not found:', id);
         }
     };
 
@@ -690,26 +668,42 @@ export default function GalleryPage() {
                                                         </div>
                                                     )}
 
-                                                    {/* Hover Overlay */}
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5">
+                                                    {/* Hover Overlay - click also opens image */}
+                                                    <div
+                                                        className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 cursor-pointer"
+                                                        onClick={() => {
+                                                            if (!selectMode) {
+                                                                handleViewImage(image.id);
+                                                            }
+                                                        }}
+                                                    >
                                                         <div className="flex items-center justify-between gap-1.5">
                                                             <div className="flex items-center gap-1">
                                                                 <button
-                                                                    onClick={() => handleDownload(image.id, image.url || image.src || '', image.filename || image.alt || '')}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDownload(image.id, image.url || image.src || '', image.filename || image.alt || '');
+                                                                    }}
                                                                     className="size-6 rounded bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
                                                                     title="Download"
                                                                 >
                                                                     <Download className="w-3 h-3" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleCopyPrompt(image.id, image.filename || '')}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleCopyPrompt(image.id, image.filename || '');
+                                                                    }}
                                                                     className="size-6 rounded bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
                                                                     title="Copy Filename"
                                                                 >
                                                                     <Copy className="w-3 h-3" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleToggleFavorite(image.id)}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleToggleFavorite(image.id);
+                                                                    }}
                                                                     className={`size-6 rounded backdrop-blur-sm flex items-center justify-center transition-colors ${favorites.has(image.id)
                                                                         ? 'bg-red-500/20 text-red-400'
                                                                         : 'bg-white/10 hover:bg-white/20 text-white'
@@ -720,7 +714,10 @@ export default function GalleryPage() {
                                                                 </button>
                                                             </div>
                                                             <button
-                                                                onClick={() => handleDelete(image.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDelete(image.id);
+                                                                }}
                                                                 disabled={isDeleting === image.id}
                                                                 className="size-6 rounded text-white/60 hover:text-red-400 hover:bg-red-400/10 backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-50"
                                                                 title="Delete"
@@ -748,11 +745,23 @@ export default function GalleryPage() {
             </main >
 
             {/* Image Details Modal */}
-            {
-                showImageModal && selectedImage && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <AnimatePresence>
+                {showImageModal && selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    >
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowImageModal(false)}></div>
-                        <div className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden max-h-[90vh] flex flex-col">
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+                            className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden max-h-[90vh] flex flex-col pointer-events-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             {/* Header */}
                             <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between shrink-0">
                                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Image Details</h3>
@@ -767,86 +776,72 @@ export default function GalleryPage() {
                             {/* Body */}
                             <div className="flex-1 overflow-y-auto p-5">
                                 <div className="flex flex-col lg:flex-row gap-6">
-                                    {/* Image */}
-                                    <div className="lg:w-2/3">
-                                        <div className="rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 flex items-center justify-center">
+                                    {/* Image - Larger and more prominent */}
+                                    <div className="lg:w-3/4">
+                                        <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50 dark:from-gray-800 dark:to-gray-900 border border-slate-200 dark:border-gray-600 flex items-center justify-center shadow-inner">
                                             <img
                                                 src={selectedImage.url || selectedImage.src}
                                                 alt={selectedImage.filename || selectedImage.alt}
-                                                className="w-full h-auto max-h-[60vh] object-contain"
+                                                className="w-full h-auto max-h-[70vh] object-contain"
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Details */}
-                                    <div className="lg:w-1/3 space-y-4">
-                                        <div className="bg-slate-50 dark:bg-gray-700/30 rounded-xl p-4 space-y-3">
-                                            <div>
-                                                <span className="text-xs font-medium text-slate-500 dark:text-gray-400">Filename</span>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">{selectedImage.filename || 'Untitled'}</p>
+                                    {/* Minimal Details Panel */}
+                                    <div className="lg:w-1/4 flex flex-col gap-4">
+                                        {/* Image Info Card */}
+                                        <div className="bg-gradient-to-br from-slate-50 to-white dark:from-gray-800 dark:to-gray-700/50 rounded-2xl p-5 border border-slate-100 dark:border-gray-600 shadow-sm space-y-4">
+                                            {/* Type Badge */}
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedImage.type === 'generated'
+                                                    ? 'bg-gradient-to-br from-teal-500 to-emerald-600'
+                                                    : 'bg-gradient-to-br from-purple-500 to-indigo-600'
+                                                    }`}>
+                                                    <ImageIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-400">Type</p>
+                                                    <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">{selectedImage.type}</p>
+                                                </div>
                                             </div>
 
-                                            {selectedImage.prompt && (
-                                                <div>
-                                                    <span className="text-xs font-medium text-slate-500 dark:text-gray-400">Prompt</span>
-                                                    <p className="text-sm text-slate-700 dark:text-gray-300 mt-0.5">{selectedImage.prompt}</p>
-                                                </div>
-                                            )}
+                                            {/* Divider */}
+                                            <div className="border-t border-slate-100 dark:border-gray-600"></div>
 
+                                            {/* Created Date */}
                                             <div>
-                                                <span className="text-xs font-medium text-slate-500 dark:text-gray-400">Type</span>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5 capitalize">{selectedImage.type}</p>
-                                            </div>
-
-                                            {selectedImage.size && (
-                                                <div>
-                                                    <span className="text-xs font-medium text-slate-500 dark:text-gray-400">Size</span>
-                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
-                                                        {(selectedImage.size / 1024).toFixed(1)} KB
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            <div>
-                                                <span className="text-xs font-medium text-slate-500 dark:text-gray-400">Created</span>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
-                                                    {new Date(selectedImage.created_at || selectedImage.createdAt || '').toLocaleString()}
+                                                <p className="text-xs text-slate-500 dark:text-gray-400 mb-1">Created</p>
+                                                <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                                                    {new Date(selectedImage.created_at || selectedImage.createdAt || '').toLocaleDateString('en-US', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </p>
+                                                <p className="text-xs text-slate-500 dark:text-gray-400">
+                                                    {new Date(selectedImage.created_at || selectedImage.createdAt || '').toLocaleTimeString('en-US', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
                                                 </p>
                                             </div>
-
-                                            <div>
-                                                <span className="text-xs font-medium text-slate-500 dark:text-gray-400">ID</span>
-                                                <p className="text-xs font-mono text-slate-600 dark:text-gray-400 mt-0.5 break-all">{selectedImage.id}</p>
-                                            </div>
                                         </div>
 
-                                        {/* Actions */}
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleDownload(selectedImage.id, selectedImage.url || selectedImage.src || '', selectedImage.filename || 'image')}
-                                                className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-600 rounded-xl text-sm font-semibold text-white transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <Download className="w-4 h-4" />
-                                                Download
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    if (selectedImage.prompt) {
-                                                        handleCopyPrompt(selectedImage.id, selectedImage.prompt);
-                                                    }
-                                                }}
-                                                className="py-2.5 px-4 bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 rounded-xl text-sm font-semibold text-slate-700 dark:text-white transition-colors"
-                                            >
-                                                <Copy className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                                        {/* Download Button */}
+                                        <button
+                                            onClick={() => handleDownload(selectedImage.id, selectedImage.url || selectedImage.src || '', selectedImage.filename || 'image')}
+                                            className="w-full py-2.5 bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 hover:from-teal-500 hover:via-teal-400 hover:to-emerald-400 rounded-xl text-sm font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 active:translate-y-0"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            Download
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )
-            }
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div >
     );
 }

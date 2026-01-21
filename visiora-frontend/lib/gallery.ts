@@ -498,4 +498,93 @@ export const galleryApi = {
             };
         }
     },
+
+    /**
+     * Download image - fetches image blob through API for CORS-safe download
+     * GET /api/gallery/{id}/download
+     * 
+     * @param id - Image ID
+     * @param imageUrl - Direct image URL (fallback for direct download)
+     * @param filename - Filename for download
+     */
+    downloadImage: async (id: string, imageUrl: string, filename: string): Promise<ApiResponse<{ downloaded: boolean }>> => {
+        const safeFilename = `${(filename || 'visiora_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
+
+        try {
+            console.log('⬇️ Downloading image:', id);
+
+            // Method 1: Try API download endpoint (if backend supports it)
+            try {
+                const res = await api.get(`/gallery/${id}/download`, {
+                    responseType: 'blob'
+                });
+
+                if (res.data) {
+                    const blob = new Blob([res.data], { type: 'image/jpeg' });
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = safeFilename;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(blobUrl);
+                    }, 100);
+
+                    console.log('✅ Download via API successful:', safeFilename);
+                    return { success: true, data: { downloaded: true } };
+                }
+            } catch (apiError) {
+                console.warn('API download endpoint not available, trying direct fetch...', apiError);
+            }
+
+            // Method 2: Try fetching directly with no-cors workaround
+            try {
+                const response = await fetch(imageUrl, {
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = safeFilename;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(blobUrl);
+                    }, 100);
+
+                    console.log('✅ Direct fetch download successful:', safeFilename);
+                    return { success: true, data: { downloaded: true } };
+                }
+            } catch (fetchError) {
+                console.warn('Direct fetch failed, trying anchor download...', fetchError);
+            }
+
+            // Method 3: Open in new tab for manual download
+            console.log('⚠️ Opening image in new tab for manual download');
+            window.open(imageUrl, '_blank');
+            return { success: true, data: { downloaded: true } };
+
+        } catch (err: any) {
+            console.error('❌ Download Error:', err);
+            // Last resort: open in new tab
+            window.open(imageUrl, '_blank');
+            return {
+                success: false,
+                error: err.message || 'Download failed, opened in new tab'
+            };
+        }
+    },
 };
