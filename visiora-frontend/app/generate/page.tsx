@@ -279,26 +279,23 @@ export default function GenerateImagesPage() {
                                 <button
                                     onClick={handleNextStep}
                                     disabled={isSubmitting}
-                                    className="group relative flex items-center gap-2.5 bg-gradient-to-b from-slate-800 to-slate-900 text-white px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 backdrop-blur-xl border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
+                                    className="group relative flex items-center gap-2 bg-[#1A1A1A] text-white px-8 py-3 rounded-full font-medium text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden ring-1 ring-white/10"
                                 >
-                                    {/* Glossy top highlight line */}
-                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                                    {/* Top Highlight */}
+                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-70"></div>
 
-                                    {/* Glass shine overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
+                                    {/* Bottom Shadow/Highlight */}
+                                    <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-black/40 to-transparent"></div>
 
-                                    {/* Hover shine effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
-
-                                    <span className="relative z-10 flex items-center gap-2">
+                                    <span className="relative z-10 flex items-center gap-2.5">
                                         {isSubmitting ? (
                                             <>
-                                                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
                                                 Processing...
                                             </>
                                         ) : (
                                             <>
-                                                Next Step
+                                                <span className="tracking-wide">Next Step</span>
                                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                                             </>
                                         )}

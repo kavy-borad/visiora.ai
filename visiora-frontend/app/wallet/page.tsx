@@ -22,6 +22,8 @@ import {
     CreditCard,
     ArrowUpRight,
     ArrowDownLeft,
+    Check,
+    Calendar,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { walletApi, WalletBalance, Transaction, TransactionFilters, Package, WalletStats } from "@/lib/wallet";
@@ -42,11 +44,63 @@ export default function WalletPage() {
     const [isLoadingPackages, setIsLoadingPackages] = useState(false);
     const [isAddingMoney, setIsAddingMoney] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<'30' | '60' | '90' | 'all'>('30');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'credit' | 'debit' | 'refund' | 'bonus'>('all');
+    const [categoryFilter, setCategoryFilter] = useState<'all' | 'top_up' | 'image_generation' | 'subscription' | 'refund' | 'bonus' | 'referral' | 'adjustment'>('all');
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
     // Transaction Details State
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [loadingTransactionId, setLoadingTransactionId] = useState<string | null>(null);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const [totalTransactions, setTotalTransactions] = useState(0);
+
+    // Custom Dropdown State
+    const [activeDropdown, setActiveDropdown] = useState<'days' | 'type' | 'category' | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Filter Options
+    const daysOptions = [
+        { value: '30', label: 'Last 30 Days' },
+        { value: '60', label: 'Last 60 Days' },
+        { value: '90', label: 'Last 90 Days' },
+        { value: 'all', label: 'Lifetime History' }
+    ];
+
+    const typeOptions = [
+        { value: 'all', label: 'All Transaction Types' },
+        { value: 'credit', label: 'Credits Added (+)' },
+        { value: 'debit', label: 'Credits Used (-)' },
+        { value: 'refund', label: 'Refunds' },
+        { value: 'bonus', label: 'Bonus Rewards' }
+    ];
+
+    const categoryOptions = [
+        { value: 'all', label: 'All Categories' },
+        { value: 'top_up', label: 'Wallet Top-up' },
+        { value: 'image_generation', label: 'Image Generation' },
+        { value: 'subscription', label: 'Subscription Plan' },
+        { value: 'refund', label: 'Refund Processed' },
+        { value: 'bonus', label: 'Bonus Credits' },
+        { value: 'referral', label: 'Referral Reward' },
+        { value: 'adjustment', label: 'Admin Adjustment' }
+    ];
 
     const handleViewTransaction = async (id: string) => {
         setLoadingTransactionId(id);
@@ -95,24 +149,45 @@ export default function WalletPage() {
         fetchPackages();
     }, []);
 
-    // Fetch transactions when filter changes (but not on initial mount - that's handled above)
+    // Fetch transactions when any filter changes (but not on initial mount - that's handled above)
     const isInitialMount = useRef(true);
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
             return; // Skip first run - initial transactions are fetched in fetchWalletData
         }
-        fetchTransactions();
-    }, [selectedFilter]);
+        // When filters change, reset to page 1
+        setCurrentPage(1);
+        fetchTransactions(1);
+    }, [selectedFilter, typeFilter, categoryFilter]);
+
+    // Fetch when page changes
+    useEffect(() => {
+        // Trigger fetch only when page changes (and it's not the initial mount/filter reset which implies page 1)
+        if (!isInitialMount.current) {
+            fetchTransactions(currentPage);
+        }
+    }, [currentPage]);
 
     const fetchWalletData = async () => {
         setIsLoading(true);
         setApiError(null);
         try {
+            // Determine filters based on state
+            const days = selectedFilter === 'all' ? undefined : parseInt(selectedFilter);
+            const type = typeFilter === 'all' ? undefined : typeFilter;
+            const category = categoryFilter === 'all' ? undefined : categoryFilter;
+
             const [walletRes, statsRes, transactionsRes] = await Promise.all([
                 walletApi.getWallet(),      // GET /api/wallet - contains balance data
                 walletApi.getStats(),       // GET /api/wallet/stats
-                walletApi.getTransactions(1, 20),
+                walletApi.getTransactions(1, 20, {
+                    days,
+                    type,
+                    category,
+                    sortBy: 'created_at',
+                    sortOrder: 'DESC'
+                }),
             ]);
 
             // Check for rate limit errors in any response
@@ -137,17 +212,26 @@ export default function WalletPage() {
                 setWalletStats(statsRes.data);
             }
 
-            // Safe check for transactions
             if (transactionsRes.success && transactionsRes.data) {
-                // Handle various response shapes
                 const txData = transactionsRes.data;
-                if (Array.isArray(txData)) {
-                    setTransactions(txData);
-                } else if (txData.transactions && Array.isArray(txData.transactions)) {
+                // The API layer now returns { transactions: [...], total, page, limit, hasMore }
+                if (txData.transactions && Array.isArray(txData.transactions)) {
+                    console.log('[WalletPage] Setting transactions:', txData.transactions.length);
                     setTransactions(txData.transactions);
+
+                    // Set pagination data
+                    const total = txData.total || txData.transactions.length;
+                    setTotalTransactions(total);
+                    setTotalPages(Math.ceil(total / 20)); // Assuming limit 20
+                } else if (Array.isArray(txData)) {
+                    setTransactions(txData as Transaction[]);
+                    setTotalTransactions(txData.length);
+                    setTotalPages(1);
                 } else {
-                    console.warn('Unexpected transactions format:', txData);
+                    console.warn('[WalletPage] Unexpected transactions format:', txData);
                     setTransactions([]);
+                    setTotalTransactions(0);
+                    setTotalPages(0);
                 }
             }
         } catch (error: any) {
@@ -163,33 +247,50 @@ export default function WalletPage() {
         }
     };
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (pageVal: number = currentPage) => {
         try {
-            const now = new Date();
-            let startDate: string | undefined;
+            setIsLoading(true);
+            // Build filters from state
+            const days = selectedFilter === 'all' ? undefined : parseInt(selectedFilter);
+            const type = typeFilter === 'all' ? undefined : typeFilter;
+            const category = categoryFilter === 'all' ? undefined : categoryFilter;
 
-            if (selectedFilter !== 'all') {
-                const days = parseInt(selectedFilter);
-                const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-                startDate = start.toISOString();
-            }
+            console.log('[WalletPage] Fetching transactions:', { page: pageVal, days, type, category });
 
-            const filters: TransactionFilters = startDate ? { startDate } : {};
-            const response = await walletApi.getTransactions(1, 20, Object.keys(filters).length > 0 ? filters : undefined);
+            const response = await walletApi.getTransactions(pageVal, 20, {
+                days,
+                type,
+                category,
+                sortBy: 'created_at',
+                sortOrder: 'DESC'
+            });
 
             if (response.success && response.data) {
                 const txData = response.data;
-                if (Array.isArray(txData)) {
-                    setTransactions(txData as any);
-                } else if (txData.transactions && Array.isArray(txData.transactions)) {
+                // The API layer now returns { transactions: [...], total, page, limit, hasMore }
+                if (txData.transactions && Array.isArray(txData.transactions)) {
+                    console.log('[WalletPage] Transactions loaded:', txData.transactions.length);
                     setTransactions(txData.transactions);
+
+                    // Update pagination
+                    const total = txData.total || txData.transactions.length;
+                    setTotalTransactions(total);
+                    setTotalPages(Math.ceil(total / 20));
+                } else if (Array.isArray(txData)) {
+                    setTransactions(txData as Transaction[]);
+                    setTotalTransactions(txData.length);
+                    setTotalPages(1);
                 } else {
                     setTransactions([]);
+                    setTotalTransactions(0);
+                    setTotalPages(0);
                 }
             }
         } catch (error) {
             console.warn('Failed to fetch transactions:', error);
             setTransactions([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -409,7 +510,7 @@ export default function WalletPage() {
     const getTransactionIcon = (type: string) => {
         switch (type) {
             case 'credit':
-            case 'promotional':
+            case 'bonus':  // Changed from 'promotional' to match backend API
                 return <ArrowDownLeft className="w-4 h-4 text-green-500" />;
             case 'debit':
                 return <ArrowUpRight className="w-4 h-4 text-red-500" />;
@@ -511,18 +612,156 @@ export default function WalletPage() {
 
                             {/* Transaction History Card */}
                             <div className="flex-1 flex flex-col rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden min-h-[300px]">
-                                {/* Header */}
-                                <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between shrink-0">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-500">
-                                            <Receipt className="w-5 h-5" />
+                                {/* Header with Filters */}
+                                <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 shrink-0">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-500">
+                                                <Receipt className="w-5 h-5" />
+                                            </div>
+                                            <h3 className="text-slate-900 dark:text-white text-base font-bold">Transaction History</h3>
                                         </div>
-                                        <h3 className="text-slate-900 dark:text-white text-base font-bold">Transaction History</h3>
                                     </div>
-                                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-gray-600 text-slate-600 dark:text-gray-300 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
-                                        <span>Last 30 days</span>
-                                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                                    </button>
+                                    {/* Filter Row */}
+                                    <div className="flex flex-wrap items-center gap-3" ref={dropdownRef}>
+                                        {/* Days Filter Dropdown */}
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setActiveDropdown(activeDropdown === 'days' ? null : 'days')}
+                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'days'
+                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                            >
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <Calendar className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'days' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                </div>
+                                                <span className="truncate max-w-[120px]">
+                                                    {daysOptions.find(o => o.value === selectedFilter)?.label}
+                                                </span>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'days' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                </div>
+                                            </button>
+
+                                            {/* Dropdown Menu */}
+                                            {activeDropdown === 'days' && (
+                                                <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                    <div className="p-1.5 flex flex-col gap-0.5">
+                                                        {daysOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                onClick={() => {
+                                                                    setSelectedFilter(option.value as any);
+                                                                    setActiveDropdown(null);
+                                                                }}
+                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${selectedFilter === option.value
+                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                    }`}
+                                                            >
+                                                                {option.label}
+                                                                {selectedFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Type Filter Dropdown */}
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'type'
+                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                            >
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <CreditCard className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'type' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                </div>
+                                                <span className="truncate max-w-[140px]">
+                                                    {typeOptions.find(o => o.value === typeFilter)?.label}
+                                                </span>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'type' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                </div>
+                                            </button>
+
+                                            {/* Dropdown Menu */}
+                                            {activeDropdown === 'type' && (
+                                                <div className="absolute top-full left-0 mt-2 w-52 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                    <div className="p-1.5 flex flex-col gap-0.5">
+                                                        {typeOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                onClick={() => {
+                                                                    setTypeFilter(option.value as any);
+                                                                    setActiveDropdown(null);
+                                                                }}
+                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${typeFilter === option.value
+                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                    }`}
+                                                            >
+                                                                {option.label}
+                                                                {typeFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Category Filter Dropdown */}
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
+                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'category'
+                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                            >
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <Filter className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'category' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                </div>
+                                                <span className="truncate max-w-[140px]">
+                                                    {categoryOptions.find(o => o.value === categoryFilter)?.label}
+                                                </span>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                </div>
+                                            </button>
+
+                                            {/* Dropdown Menu */}
+                                            {activeDropdown === 'category' && (
+                                                <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                    <div className="p-1.5 flex flex-col gap-0.5">
+                                                        {categoryOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                onClick={() => {
+                                                                    setCategoryFilter(option.value as any);
+                                                                    setActiveDropdown(null);
+                                                                }}
+                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${categoryFilter === option.value
+                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                    }`}
+                                                            >
+                                                                {option.label}
+                                                                {categoryFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* List */}
@@ -569,6 +808,35 @@ export default function WalletPage() {
                                         <p className="text-slate-500 dark:text-gray-400 text-sm max-w-xs mx-auto">
                                             Your purchase history and credit usage will appear here.
                                         </p>
+                                    </div>
+                                )}
+
+                                {/* Pagination Controls */}
+                                {transactions.length > 0 && totalPages > 1 && (
+                                    <div className="px-6 py-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50/30 dark:bg-gray-800/30 flex items-center justify-between">
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                                            Page <span className="text-slate-900 dark:text-white">{currentPage}</span> of <span className="text-slate-900 dark:text-white">{totalPages}</span>
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                disabled={currentPage === 1 || isLoading}
+                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={currentPage === totalPages || isLoading}
+                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -634,84 +902,103 @@ export default function WalletPage() {
                 </div>
 
                 {/* Transaction Details Modal */}
-                {showDetailsModal && selectedTransaction && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDetailsModal(false)}></div>
-                        <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            {/* Header */}
-                            <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">Transaction Details</h3>
-                                <button
-                                    onClick={() => setShowDetailsModal(false)}
-                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
+                {
+                    showDetailsModal && selectedTransaction && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDetailsModal(false)}></div>
+                            <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                {/* Header */}
+                                <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Transaction Details</h3>
+                                    <button
+                                        onClick={() => setShowDetailsModal(false)}
+                                        className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
 
-                            {/* Body */}
-                            <div className="p-5">
-                                <div className="flex flex-col items-center mb-6">
-                                    <div className="size-14 bg-slate-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-3">
-                                        {getTransactionIcon(selectedTransaction.type)}
+                                {/* Body */}
+                                <div className="p-5">
+                                    <div className="flex flex-col items-center mb-6">
+                                        <div className="size-14 bg-slate-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-3">
+                                            {getTransactionIcon(selectedTransaction.type)}
+                                        </div>
+                                        <h2 className={`text-2xl font-bold ${selectedTransaction.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                                            {selectedTransaction.type === 'debit' ? '-' : '+'}{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                                        </h2>
+                                        <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-1">{selectedTransaction.description}</p>
+                                        <div className={`mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedTransaction.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : selectedTransaction.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                            {selectedTransaction.status.toUpperCase()}
+                                        </div>
                                     </div>
-                                    <h2 className={`text-2xl font-bold ${selectedTransaction.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
-                                        {selectedTransaction.type === 'debit' ? '-' : '+'}{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
-                                    </h2>
-                                    <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-1">{selectedTransaction.description}</p>
-                                    <div className={`mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedTransaction.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : selectedTransaction.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                                        {selectedTransaction.status.toUpperCase()}
+
+                                    <div className="space-y-3 bg-slate-50 dark:bg-gray-700/30 rounded-xl p-4 border border-slate-100 dark:border-gray-700/50">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 dark:text-gray-400">Date</span>
+                                            <span className="font-semibold text-slate-900 dark:text-white">{new Date(selectedTransaction.createdAt).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 dark:text-gray-400">Transaction ID</span>
+                                            <span className="font-mono font-medium text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction.id}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 dark:text-gray-400">Type</span>
+                                            <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.type}</span>
+                                        </div>
+                                        {selectedTransaction.metadata?.paymentMethod && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 dark:text-gray-400">Gateway</span>
+                                                <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.metadata.paymentMethod}</span>
+                                            </div>
+                                        )}
+                                        {/* Order ID - from metadata */}
+                                        {selectedTransaction.metadata?.orderId && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 dark:text-gray-400">Order ID</span>
+                                                <span className="font-mono text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction.metadata.orderId}</span>
+                                            </div>
+                                        )}
+                                        {/* Generation ID - from metadata */}
+                                        {selectedTransaction.metadata?.generationId && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 dark:text-gray-400">Generation ID</span>
+                                                <span className="font-mono text-slate-700 dark:text-gray-300 text-xs truncate max-w-[180px]" title={selectedTransaction.metadata.generationId}>
+                                                    {selectedTransaction.metadata.generationId}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {/* Promo Code - from metadata */}
+                                        {selectedTransaction.metadata?.promoCode && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 dark:text-gray-400">Promo Code</span>
+                                                <span className="font-mono text-teal-600 dark:text-teal-400 text-xs font-bold bg-teal-50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded">
+                                                    {selectedTransaction.metadata.promoCode}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 bg-slate-50 dark:bg-gray-700/30 rounded-xl p-4 border border-slate-100 dark:border-gray-700/50">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-500 dark:text-gray-400">Date</span>
-                                        <span className="font-semibold text-slate-900 dark:text-white">{new Date(selectedTransaction.createdAt).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-500 dark:text-gray-400">Transaction ID</span>
-                                        <span className="font-mono font-medium text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction.id}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-500 dark:text-gray-400">Type</span>
-                                        <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.type}</span>
-                                    </div>
-                                    {selectedTransaction.metadata?.paymentMethod && (
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="text-slate-500 dark:text-gray-400">Gateway</span>
-                                            <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.metadata.paymentMethod}</span>
-                                        </div>
-                                    )}
-                                    {/* Order ID from Metadata - If available */}
-                                    {/* Need to ensure 'orderId' or similar effectively exists in Transaction type or metadata */}
-                                    {(selectedTransaction as any).orderId && (
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="text-slate-500 dark:text-gray-400">Order ID</span>
-                                            <span className="font-mono text-slate-700 dark:text-gray-300 text-xs">{(selectedTransaction as any).orderId}</span>
-                                        </div>
-                                    )}
+                                {/* Footer */}
+                                <div className="p-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50 flex gap-3">
+                                    <button
+                                        onClick={() => setShowDetailsModal(false)}
+                                        className="flex-1 py-2.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl text-sm font-semibold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                                    >
+                                        Close
+                                    </button>
+                                    <button className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-600 rounded-xl text-sm font-semibold text-white transition-colors shadow-sm shadow-teal-500/20">
+                                        Download Receipt
+                                    </button>
                                 </div>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="p-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50 flex gap-3">
-                                <button
-                                    onClick={() => setShowDetailsModal(false)}
-                                    className="flex-1 py-2.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl text-sm font-semibold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
-                                >
-                                    Close
-                                </button>
-                                <button className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-600 rounded-xl text-sm font-semibold text-white transition-colors shadow-sm shadow-teal-500/20">
-                                    Download Receipt
-                                </button>
                             </div>
                         </div>
-                    </div>
-                )}
-            </main>
-        </div>
+                    )
+                }
+            </main >
+        </div >
     );
 }

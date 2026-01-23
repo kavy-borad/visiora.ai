@@ -16,6 +16,8 @@ import {
     X,
     Plus,
     ShoppingBag,
+    Monitor,
+    Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
@@ -84,6 +86,22 @@ export default function DetailsPage() {
     const [genderFilter, setGenderFilter] = useState<'female' | 'male' | 'unisex' | 'all'>('all');
     const [styleFilter, setStyleFilter] = useState<'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all'>('all');
 
+    // Custom Dropdown State
+    const [activeDropdown, setActiveDropdown] = useState<'gender' | 'style' | 'category' | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Page transition loader
     const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
@@ -267,6 +285,17 @@ export default function DetailsPage() {
             // Build bundle options for batch_image (E-commerce bundle)
             let bundleOptionsPayload: BundleOptionsPayload | undefined = undefined;
             if (generationType === 'batch_image' && savedBundleOptions) {
+                // Derive image count from product views
+                const getImageCountFromViews = (views: string): number => {
+                    switch (views) {
+                        case 'views_standard': return 4;
+                        case 'views_basic': return 2;
+                        case 'views_extended': return 6;
+                        case 'views_360': return 8;
+                        default: return 4; // Default to standard
+                    }
+                };
+
                 bundleOptionsPayload = {
                     product_views: savedBundleOptions.productViews || 'views_standard',
                     background: savedBundleOptions.backgroundType || 'bg_white',
@@ -277,7 +306,7 @@ export default function DetailsPage() {
                         natural_shadow: savedBundleOptions.naturalShadow ?? true,
                         reflection: savedBundleOptions.reflection ?? false,
                     },
-                    image_count: parseInt(savedBundleOptions.numberOfImages) || imageCount,
+                    image_count: getImageCountFromViews(savedBundleOptions.productViews || 'views_standard'),
                 };
             }
 
@@ -340,13 +369,6 @@ export default function DetailsPage() {
         { id: "electronics", name: "Electronics", description: "Phones, laptops, gadgets, etc.", show_model: false, recommended_model: "product_studio", icon: null },
         { id: "food", name: "Food & Beverage", description: "Food items, drinks, etc.", show_model: false, recommended_model: "food_photography", icon: null },
     ];
-
-    // User credits display values (fallback)
-
-
-
-
-
 
     if (isPageLoading) {
         return (
@@ -440,324 +462,353 @@ export default function DetailsPage() {
                                     </div>
                                 </div>
 
-                                {/* Form Content - Compact Layout */}
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm md:flex-1 flex flex-col">
-                                    <div className="p-3 sm:p-5 md:p-6 lg:p-6flex flex-col gap-1md:flex-1">
-                                        {/* Row 1: Image Type, Category, Brand Info - Side by Side */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 shrink-0">
-                                            {/* Image Type */}
-                                            <div className="flex flex-col gap-1">
-                                                <h2 className="text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5">
-                                                    {generationType === 'batch_image' ? (
-                                                        <ShoppingBag className="w-3.5 h-3.5 text-teal-500" />
-                                                    ) : (
-                                                        <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
-                                                    )}
-                                                    Image Type
-                                                </h2>
-                                                <div
-                                                    className="group flex items-center gap-2 h-[52px] px-3 rounded-lg cursor-pointer transition-all border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20"
-                                                >
-                                                    <div className="p-1.5 rounded-lg flex-shrink-0 bg-white dark:bg-gray-800 text-teal-500">
-                                                        {generationType === 'batch_image' ? (
-                                                            <ShoppingBag className="w-3.5 h-3.5" />
-                                                        ) : (
-                                                            <ImageIcon className="w-3.5 h-3.5" />
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-gray-900 dark:text-white font-semibold text-xs">
-                                                            {generationType === 'batch_image' ? "E-Commerce Bundle" : "Single Image"}
-                                                        </span>
-                                                        <p className="text-gray-500 text-[9px]">
-                                                            {generationType === 'batch_image' ? "Multiple angles & styles" : "Generate from a single source"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                {/* Form Content - 2 Column Layout */}
+                                <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 pb-2">
+                                    {/* Left Column - Configuration & Inputs */}
+                                    <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar md:pr-1">
 
-                                            {/* Category Selection */}
-                                            <div className="flex flex-col gap-1">
-                                                <h2 className="text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5">
-                                                    <Tag className="w-3.5 h-3.5 text-teal-500" />
-                                                    Category
-                                                </h2>
-                                                <div className="relative">
-                                                    <select
-                                                        value={businessCategory}
-                                                        onChange={(e) => setBusinessCategory(e.target.value)}
-                                                        className="w-full h-[52px] pl-3 pr-10 rounded-lg bg-white dark:bg-gray-700 border border-teal-200 dark:border-gray-600 text-teal-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 appearance-none text-sm font-medium cursor-pointer shadow-sm hover:shadow-md transition-all"
-                                                    >
-                                                        <option value="">Select category...</option>
-                                                        {displayCategories.map((cat) => (
-                                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
+                                        {/* Image Type / Context Card */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                                            <div className="flex items-start gap-4">
+                                                <div className="p-2.5 rounded-lg bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 shrink-0">
+                                                    {generationType === 'batch_image' ? <ShoppingBag className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
                                                 </div>
-                                            </div>
-
-                                            {/* Brand Name */}
-                                            <div className="flex flex-col gap-1">
-                                                <h2 className="text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5">
-                                                    <Briefcase className="w-3.5 h-3.5 text-gray-400" />
-                                                    Brand Name
-                                                </h2>
-                                                <input
-                                                    value={brandName}
-                                                    onChange={(e) => setBrandName(e.target.value)}
-                                                    className="w-full h-[52px] px-3 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm"
-                                                    placeholder="e.g. Acme Corp"
-                                                    type="text"
-                                                />
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                        {generationType === 'batch_image' ? "E-commerce Bundle" : "Single Image"}
+                                                    </h3>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                        {generationType === 'batch_image'
+                                                            ? "Generate multiple variations for products"
+                                                            : "Generate a single professional image"}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Row 2: Model Selection - Shows when category has show_model: true AND not batch_image */}
+                                        {/* Brand Information */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Briefcase className="w-4 h-4 text-slate-900 dark:text-white" />
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Brand Information</h3>
+                                            </div>
 
-                                        {(generationType !== 'batch_image' && displayCategories.find(c => c.id === businessCategory)?.show_model) && (
-                                            <div className="md:flex-1 md:min-h-0 flex flex-col gap-2">
-                                                {/* Branding Info Row - Compact */}
-                                                <div className="shrink-0 bg-gray-50 mt-4 dark:bg-gray-700/50 rounded-lg p-2 border border-gray-200 dark:border-gray-600">
-                                                    <div className="flex items-center gap-2 mb-1.5">
-                                                        <Briefcase className="w-3 h-3 text-gray-400" />
-                                                        <h3 className="text-[11px] font-bold text-gray-900 dark:text-white">Additional Branding Info</h3>
-                                                        <span className="text-[8px] font-normal text-gray-400 bg-white dark:bg-gray-600 px-1 py-0.5 rounded-full">Optional</span>
-                                                    </div>
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        {/* Logo Upload */}
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[9px] font-medium">Brand Logo</label>
-                                                            <input
-                                                                ref={fileInputRef}
-                                                                type="file"
-                                                                accept=".svg,.png,.jpg,.jpeg"
-                                                                onChange={handleLogoUpload}
-                                                                className="hidden"
-                                                            />
-                                                            {logoPreview ? (
-                                                                <div className="h-9 bg-white dark:bg-gray-800 border-2 border-teal-500 rounded-lg flex items-center justify-center px-2 relative">
-                                                                    <img src={logoPreview} alt="Logo" className="max-h-6 max-w-full object-contain" />
-                                                                    <button
-                                                                        onClick={removeLogo}
-                                                                        className="absolute top-0.5 right-0.5 size-3.5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
-                                                                    >
-                                                                        <X className="w-2 h-2" />
-                                                                    </button>
-                                                                </div>
-                                                            ) : (
-                                                                <div
-                                                                    onClick={() => fileInputRef.current?.click()}
-                                                                    className="h-9 bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer hover:border-teal-400 transition-colors"
-                                                                >
-                                                                    <CloudUpload className="w-3.5 h-3.5 text-gray-400" />
-                                                                    <span className="text-[10px] text-gray-400">Upload</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Instagram */}
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[9px] font-medium">Instagram</label>
-                                                            <div className="relative">
-                                                                <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-400 pointer-events-none text-xs">@</span>
-                                                                <input
-                                                                    value={instagramUsername}
-                                                                    onChange={(e) => setInstagramUsername(e.target.value)}
-                                                                    className="w-full h-9 pl-5 pr-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-teal-500 text-xs"
-                                                                    placeholder="username"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Website */}
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[9px] font-medium">Website URL</label>
-                                                            <input
-                                                                value={websiteUrl}
-                                                                onChange={(e) => setWebsiteUrl(e.target.value)}
-                                                                className="w-full h-9 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-teal-500 text-xs"
-                                                                placeholder="https://example.com"
-                                                            />
-                                                        </div>
-                                                    </div>
+                                            <div className="space-y-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Brand Name</label>
+                                                    <input
+                                                        value={brandName}
+                                                        onChange={(e) => setBrandName(e.target.value)}
+                                                        className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-slate-400"
+                                                        placeholder="e.g. Acme Corp"
+                                                    />
                                                 </div>
 
-                                                {/* Models Grid - Below Branding Info */}
-                                                <div className="md:flex-1 md:min-h-0 flex flex-col">
-                                                    <div className="flex items-center justify-between mb-2 shrink-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <Grid3X3 className="w-3.5 h-3.5 text-gray-400" />
-                                                            <h3 className="text-xs font-bold text-gray-900 dark:text-white">Select Human Model</h3>
-                                                            <span className="text-[9px] font-normal text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">Optional</span>
-                                                        </div>
-                                                        {/* Filter Dropdowns - Professional Teal Theme */}
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="relative">
-                                                                <select
-                                                                    value={genderFilter}
-                                                                    onChange={(e) => setGenderFilter(e.target.value as 'female' | 'male' | 'unisex' | 'all')}
-                                                                    className="h-8 text-xs pl-3 pr-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer appearance-none"
-                                                                >
-                                                                    <option value="all">All Genders</option>
-                                                                    <option value="female">Female</option>
-                                                                    <option value="male">Male</option>
-                                                                    <option value="unisex">Unisex</option>
-                                                                </select>
-                                                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
-                                                            </div>
-                                                            <div className="relative">
-                                                                <select
-                                                                    value={styleFilter}
-                                                                    onChange={(e) => setStyleFilter(e.target.value as 'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all')}
-                                                                    className="h-8 text-xs pl-3 pr-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer appearance-none"
-                                                                >
-                                                                    <option value="all">All Styles</option>
-                                                                    <option value="professional">Professional</option>
-                                                                    <option value="casual">Casual</option>
-                                                                    <option value="athletic">Athletic</option>
-                                                                    <option value="elegant">Elegant</option>
-                                                                    <option value="diverse">Diverse</option>
-                                                                </select>
-                                                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400 opacity-50 pointer-events-none" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Category</label>
+                                                    <div className="relative" ref={dropdownRef}>
+                                                        <button
+                                                            onClick={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
+                                                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border text-sm transition-all
+                                                                ${activeDropdown === 'category'
+                                                                    ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-slate-900 dark:text-white'
+                                                                    : 'bg-slate-50 dark:bg-gray-900 border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white hover:border-teal-500 dark:hover:border-teal-500 hover:ring-2 hover:ring-teal-500/10'
+                                                                }`}
+                                                        >
+                                                            <span className={!businessCategory ? "text-slate-400" : ""}>
+                                                                {displayCategories.find(c => c.id === businessCategory)?.name || "Select category..."}
+                                                            </span>
+                                                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                        </button>
 
-                                                    <div className="md:flex-1 md:min-h-0 p-1 pb-4 overflow-y-auto">
-                                                        {modelPresetsLoading ? (
-                                                            <div className="flex items-center justify-center h-32">
-                                                                <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 2xl:grid-cols-8 gap-3">
-                                                                {(modelPresets.length > 0 ? modelPresets : fallbackModelPresets).map((preset) => (
-                                                                    <div
-                                                                        key={preset.id}
-                                                                        className="flex flex-col cursor-pointer group"
-                                                                        onClick={() => setSelectedModelPreset(preset.id)}
-                                                                        title={preset.description}
-                                                                    >
-                                                                        <div className={`relative rounded-lg bg-gray-100 dark:bg-gray-700 h-[125px] overflow-hidden transition-all ${selectedModelPreset === preset.id
-                                                                            ? "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-gray-800"
-                                                                            : "border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-teal-400 hover:ring-offset-1"
-                                                                            }`}>
-                                                                            {preset.thumbnail ? (
-                                                                                <img
-                                                                                    src={preset.thumbnail}
-                                                                                    alt={preset.name}
-                                                                                    className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-110"
-                                                                                />
-                                                                            ) : (
-                                                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700">
-                                                                                    <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">
-                                                                                        {preset.gender === 'female' ? '👩' : preset.gender === 'male' ? '👨' : '🧑'}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                            {/* Gender & Style badges */}
-                                                                            <div className="absolute top-1 left-1 flex gap-1">
-                                                                                <span className="text-[7px] px-1 py-0.5 rounded bg-black/50 text-white capitalize">{preset.gender}</span>
-                                                                            </div>
-                                                                            {selectedModelPreset === preset.id && (
-                                                                                <div className="absolute bottom-0.5 right-0.5 bg-teal-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-lg">
-                                                                                    <Check className="w-2 h-2" />
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                        <p className={`text-[9px] font-medium text-center mt-1 pb-0.5 truncate ${selectedModelPreset === preset.id
-                                                                            ? "text-teal-500"
-                                                                            : "text-gray-500 dark:text-gray-400"
-                                                                            }`}>
-                                                                            {preset.name}
-                                                                        </p>
-                                                                    </div>
-                                                                ))}
-
-                                                                {/* Custom Add Button */}
-                                                                <div className="flex flex-col cursor-pointer group">
-                                                                    <div className="rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 transition-colors h-[125px]">
-                                                                        <Plus className="w-4 h-4 text-gray-300 dark:text-gray-500 group-hover:text-gray-400" />
-                                                                    </div>
-                                                                    <p className="text-[9px] font-medium text-center mt-1 pb-0.5 text-gray-400">Custom</p>
+                                                        {/* Dropdown Menu */}
+                                                        {activeDropdown === 'category' && (
+                                                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                                <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
+                                                                    {displayCategories.map((cat) => (
+                                                                        <button
+                                                                            key={cat.id}
+                                                                            onClick={() => {
+                                                                                setBusinessCategory(cat.id);
+                                                                                setActiveDropdown(null);
+                                                                            }}
+                                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group
+                                                                                ${businessCategory === cat.id
+                                                                                    ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 font-medium'
+                                                                                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50'
+                                                                                }`}
+                                                                        >
+                                                                            <span>{cat.name}</span>
+                                                                            {businessCategory === cat.id && <Check className="w-4 h-4 text-teal-500" />}
+                                                                        </button>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
                                             </div>
-                                        )}
+                                        </div>
 
-                                        {/* Row 2 Alternative: Additional Info - Shows when category doesn't have show_model or no category selected OR is batch_image */}
+                                        {/* Additional Branding Info */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <ImageIcon className="w-4 h-4 text-slate-900 dark:text-white" />
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Additional Branding Info</h3>
+                                                <span className="text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">Optional</span>
+                                            </div>
 
-                                        {(generationType === 'batch_image' || !displayCategories.find(c => c.id === businessCategory)?.show_model) && (
-                                            <div className="md:flex-1 md:min-h-0 flex flex-col mt-4">
-                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl mt-4 border border-gray-200 dark:border-gray-600 md:flex-1 flex flex-col">
-                                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                                        <Briefcase className="w-4 h-4 text-gray-400" />
-                                                        Additional Branding Info
-                                                        <span className="text-[10px] font-normal text-gray-400 bg-white dark:bg-gray-600 px-2 py-0.5 rounded-full">Optional</span>
-                                                    </h3>
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                        {/* Logo Upload */}
-                                                        <div className="flex flex-col gap-1">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[10px] font-medium">Brand Logo</label>
-                                                            <input
-                                                                ref={fileInputRef}
-                                                                type="file"
-                                                                accept=".svg,.png,.jpg,.jpeg"
-                                                                onChange={handleLogoUpload}
-                                                                className="hidden"
-                                                            />
-                                                            {logoPreview ? (
-                                                                <div className="h-12 bg-white dark:bg-gray-800 border-2 border-teal-500 rounded-lg flex items-center justify-center px-3 relative">
-                                                                    <img src={logoPreview} alt="Logo" className="max-h-8 max-w-full object-contain" />
-                                                                    <button
-                                                                        onClick={removeLogo}
-                                                                        className="absolute top-1 right-1 size-4 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
-                                                                    >
-                                                                        <X className="w-2.5 h-2.5" />
-                                                                    </button>
-                                                                </div>
-                                                            ) : (
-                                                                <div
-                                                                    onClick={() => fileInputRef.current?.click()}
-                                                                    className="h-12 bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-2 cursor-pointer hover:border-teal-400 transition-colors"
-                                                                >
-                                                                    <CloudUpload className="w-4 h-4 text-gray-400" />
-                                                                    <span className="text-xs text-gray-400">Upload Logo</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Instagram */}
-                                                        <div className="flex flex-col gap-1">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[10px] font-medium">Instagram</label>
-                                                            <div className="relative">
-                                                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none text-sm">@</span>
-                                                                <input
-                                                                    value={instagramUsername}
-                                                                    onChange={(e) => setInstagramUsername(e.target.value)}
-                                                                    className="w-full h-12 pl-7 pr-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-teal-500 text-sm"
-                                                                    placeholder="username"
-                                                                />
+                                            <div className="space-y-4">
+                                                {/* Logo */}
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Brand Logo</label>
+                                                    <input
+                                                        ref={fileInputRef}
+                                                        type="file"
+                                                        accept=".svg,.png,.jpg,.jpeg"
+                                                        onChange={handleLogoUpload}
+                                                        className="hidden"
+                                                    />
+                                                    {logoPreview ? (
+                                                        <div className="relative group">
+                                                            <div className="h-16 w-full rounded-xl border-2 border-teal-500 bg-teal-50/10 dark:bg-teal-900/10 flex items-center justify-center p-2">
+                                                                <img src={logoPreview} alt="Logo" className="max-h-full max-w-full object-contain" />
                                                             </div>
+                                                            <button
+                                                                onClick={removeLogo}
+                                                                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
                                                         </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => fileInputRef.current?.click()}
+                                                            className="w-full h-16 rounded-xl border border-dashed border-slate-300 dark:border-gray-600 bg-slate-50 dark:bg-gray-900/50 hover:bg-slate-100 dark:hover:bg-gray-800 hover:border-teal-500 dark:hover:border-teal-500 text-slate-400 dark:text-gray-500 flex flex-col items-center justify-center gap-1 transition-all group"
+                                                        >
+                                                            <CloudUpload className="w-5 h-5 group-hover:text-teal-500 transition-colors" />
+                                                            <span className="text-xs font-medium">Upload logo file</span>
+                                                        </button>
+                                                    )}
+                                                </div>
 
-                                                        {/* Website */}
-                                                        <div className="flex flex-col gap-1">
-                                                            <label className="text-gray-600 dark:text-gray-300 text-[10px] font-medium">Website URL</label>
-                                                            <input
-                                                                value={websiteUrl}
-                                                                onChange={(e) => setWebsiteUrl(e.target.value)}
-                                                                className="w-full h-12 px-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-teal-500 text-sm"
-                                                                placeholder="https://example.com"
-                                                            />
+                                                {/* Website */}
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Website URL</label>
+                                                    <div className="relative">
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <Monitor className="w-3.5 h-3.5 text-slate-400" />
                                                         </div>
+                                                        <input
+                                                            value={websiteUrl}
+                                                            onChange={(e) => setWebsiteUrl(e.target.value)}
+                                                            className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-slate-400"
+                                                            placeholder="https://example.com"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Instagram */}
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Instagram</label>
+                                                    <div className="relative">
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span className="text-slate-400 font-bold">@</span>
+                                                        </div>
+                                                        <input
+                                                            value={instagramUsername}
+                                                            onChange={(e) => setInstagramUsername(e.target.value)}
+                                                            className="w-full pl-8 pr-3 py-2.5 rounded-lg bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-slate-400"
+                                                            placeholder="username"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
-                                        )}
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column - Model Selection */}
+                                    <div className="flex-1 min-h-0 flex flex-col">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <Grid3X3 className="w-5 h-5 text-slate-900 dark:text-white" />
+                                                <h3 className="text-base font-bold text-slate-900 dark:text-white">Select Human Model</h3>
+                                                <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">Optional</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3" ref={dropdownRef}>
+                                                {/* Gender Filter */}
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setActiveDropdown(activeDropdown === 'gender' ? null : 'gender')}
+                                                        className={`pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                            ${activeDropdown === 'gender'
+                                                                ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                                : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                                    >
+                                                        <span className="truncate">
+                                                            {{
+                                                                'all': 'All Genders',
+                                                                'female': 'Female',
+                                                                'male': 'Male',
+                                                                'unisex': 'Unisex'
+                                                            }[genderFilter]}
+                                                        </span>
+                                                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'gender' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {activeDropdown === 'gender' && (
+                                                        <div className="absolute top-full right-0 mt-2 w-32 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                            <div className="p-1 px-1.5 flex flex-col gap-0.5">
+                                                                {[
+                                                                    { value: 'all', label: 'All Genders' },
+                                                                    { value: 'female', label: 'Female' },
+                                                                    { value: 'male', label: 'Male' },
+                                                                    { value: 'unisex', label: 'Unisex' }
+                                                                ].map((option) => (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        onClick={() => {
+                                                                            setGenderFilter(option.value as any);
+                                                                            setActiveDropdown(null);
+                                                                        }}
+                                                                        className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                            ${genderFilter === option.value
+                                                                                ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                                : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                            }`}
+                                                                    >
+                                                                        {option.label}
+                                                                        {genderFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Style Filter */}
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setActiveDropdown(activeDropdown === 'style' ? null : 'style')}
+                                                        className={`pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                            ${activeDropdown === 'style'
+                                                                ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                                : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                                    >
+                                                        <span className="truncate">
+                                                            {{
+                                                                'all': 'All Styles',
+                                                                'professional': 'Professional',
+                                                                'casual': 'Casual',
+                                                                'athletic': 'Athletic',
+                                                                'elegant': 'Elegant',
+                                                                'diverse': 'Diverse'
+                                                            }[styleFilter]}
+                                                        </span>
+                                                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'style' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {activeDropdown === 'style' && (
+                                                        <div className="absolute top-full right-0 mt-2 w-32 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                            <div className="p-1 px-1.5 flex flex-col gap-0.5">
+                                                                {[
+                                                                    { value: 'all', label: 'All Styles' },
+                                                                    { value: 'professional', label: 'Professional' },
+                                                                    { value: 'casual', label: 'Casual' },
+                                                                    { value: 'athletic', label: 'Athletic' },
+                                                                    { value: 'elegant', label: 'Elegant' },
+                                                                    { value: 'diverse', label: 'Diverse' }
+                                                                ].map((option) => (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        onClick={() => {
+                                                                            setStyleFilter(option.value as any);
+                                                                            setActiveDropdown(null);
+                                                                        }}
+                                                                        className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                            ${styleFilter === option.value
+                                                                                ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                                : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                            }`}
+                                                                    >
+                                                                        {option.label}
+                                                                        {styleFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Model Grid or Empty State */}
+                                        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 overflow-y-auto custom-scrollbar">
+                                            {(!displayCategories.find(c => c.id === businessCategory)?.show_model && displayCategories.find(c => c.id === businessCategory)) ? (
+                                                <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
+                                                    <div className="w-16 h-16 bg-slate-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">
+                                                        <ImageIcon className="w-8 h-8 opacity-50" />
+                                                    </div>
+                                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">No models needed</h3>
+                                                    <p className="text-xs max-w-[200px]">The selected category typically doesn't use human models. You can proceed without selecting one.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                                                    {(modelPresets.length > 0 ? modelPresets : fallbackModelPresets).map((preset) => (
+                                                        <div
+                                                            key={preset.id}
+                                                            className="flex flex-col cursor-pointer group"
+                                                            onClick={() => setSelectedModelPreset(preset.id)}
+                                                        >
+                                                            <div className={`relative aspect-[3/4] rounded-xl overflow-hidden transition-all duration-300 ${selectedModelPreset === preset.id
+                                                                ? "ring-2 ring-teal-500 ring-offset-2 dark:ring-offset-gray-800 shadow-md"
+                                                                : "border border-slate-200 dark:border-gray-700 hover:border-teal-400 hover:shadow-lg"
+                                                                }`}>
+                                                                {preset.thumbnail ? (
+                                                                    <img
+                                                                        src={preset.thumbnail}
+                                                                        alt={preset.name}
+                                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                                    />
+                                                                ) : (
+                                                                    <div className={`w-full h-full flex items-center justify-center ${selectedModelPreset === preset.id ? "bg-teal-50 dark:bg-teal-900/20" : "bg-slate-100 dark:bg-gray-700"}`}>
+                                                                        <span className="text-3xl filter grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                                                                            {preset.gender === 'female' ? '👩' : preset.gender === 'male' ? '👨' : '🧑'}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Selection Check */}
+                                                                {selectedModelPreset === preset.id && (
+                                                                    <div className="absolute top-2 right-2 size-6 bg-teal-500 text-white rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-200">
+                                                                        <Check className="w-3.5 h-3.5" />
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Hover Overlay */}
+                                                                <div className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${selectedModelPreset === preset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                                    <p className="text-white text-xs font-bold text-center line-clamp-1">{preset.name}</p>
+                                                                    <p className="text-white/80 text-[10px] text-center capitalize mt-0.5">{preset.gender}</p>
+                                                                </div>
+                                                            </div>
+                                                            {selectedModelPreset !== preset.id && (
+                                                                <div className="mt-2 text-center">
+                                                                    <p className="text-xs font-bold text-slate-700 dark:text-gray-200 truncate group-hover:text-teal-600 transition-colors">{preset.name}</p>
+                                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400 capitalize">{preset.gender}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -784,18 +835,15 @@ export default function DetailsPage() {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="group relative flex items-center gap-2.5 bg-gradient-to-b from-slate-800 to-slate-900 text-white px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 backdrop-blur-xl border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
+                                    className="group relative flex items-center gap-2 bg-[#1A1A1A] text-white px-8 py-3 rounded-full font-medium text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden ring-1 ring-white/10"
                                 >
-                                    {/* Glossy top highlight line */}
-                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                                    {/* Top Highlight */}
+                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-70"></div>
 
-                                    {/* Glass shine overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
+                                    {/* Bottom Shadow/Highlight */}
+                                    <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-black/40 to-transparent"></div>
 
-                                    {/* Hover shine effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
-
-                                    <span className="relative z-10 flex items-center gap-2">
+                                    <span className="relative z-10 flex items-center gap-2.5">
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -803,8 +851,8 @@ export default function DetailsPage() {
                                             </>
                                         ) : (
                                             <>
-                                                Generate
-                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                                <Sparkles className="w-4 h-4 fill-white text-white" />
+                                                <span className="tracking-wide">Generate</span>
                                             </>
                                         )}
                                     </span>
@@ -817,4 +865,3 @@ export default function DetailsPage() {
         </>
     );
 }
-

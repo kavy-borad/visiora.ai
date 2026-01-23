@@ -124,7 +124,13 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     const getSkeletonContent = () => {
         const path = nextPath || pathname; // Fallback to current path if nextPath not set
 
-        // 0. Dashboard Skeleton
+        // 0. Disable Loader for Auth Pages
+        // We want these pages to load instantly with their own internal animations
+        if (path.includes('/login') || path.includes('/register') || path.includes('/signup')) {
+            return null;
+        }
+
+        // 1. Dashboard Skeleton
         if (path === '/dashboard' || path.startsWith('/dashboard')) {
             return (
                 <div className="w-full h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
@@ -1856,173 +1862,177 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
             {children}
 
             {/* Optimized Page Transition Loader - Instant Show, Smooth Hide */}
-            <div
-                className={`fixed inset-0 z-[9999] ${isTransitioning
-                    ? 'opacity-100 visible pointer-events-auto'
-                    : 'opacity-0 invisible pointer-events-none transition-opacity duration-200'
-                    }`}
-                style={{ willChange: isTransitioning ? 'opacity' : 'auto' }}
-            >
-                {/* Skeleton Loader Layout */}
-                <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900 overflow-hidden">
-                    {(() => {
-                        const path = nextPath || pathname;
+            {/* Optimized Page Transition Loader - Instant Show, Smooth Hide */}
+            {/* Exclude Auth pages from global transition loader to allow their native animations */}
+            {!((nextPath || pathname)?.includes('/login') || (nextPath || pathname)?.includes('/register') || (nextPath || pathname)?.includes('/signup')) && (
+                <div
+                    className={`fixed inset-0 z-[9999] ${isTransitioning
+                        ? 'opacity-100 visible pointer-events-auto'
+                        : 'opacity-0 invisible pointer-events-none transition-opacity duration-200'
+                        }`}
+                    style={{ willChange: isTransitioning ? 'opacity' : 'auto' }}
+                >
+                    {/* Skeleton Loader Layout */}
+                    <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900 overflow-hidden">
+                        {(() => {
+                            const path = nextPath || pathname;
 
-                        // Special case for Email Support - Simple Loader (Bypass all Layout Skeletons)
-                        if (path.includes('/settings/support')) {
-                            return (
-                                <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-gray-950">
-                                    <Loader2 className="h-10 w-10 animate-spin text-teal-600 dark:text-teal-400" />
-                                </div>
-                            );
-                        }
-                        const isFullLayout = path === '/' ||
-                            path.includes('view=landing') ||
-                            path.includes('/features') ||
-                            path.includes('/solutions') ||
-                            path.includes('/pricing') ||
-                            path.includes('/results') ||
-                            path.includes('/get-started') ||
-                            path.startsWith('/dashboard') ||
-                            path.startsWith('/generate') ||
-                            path.startsWith('/gallery') ||
-                            path.startsWith('/wallet') ||
-                            path.startsWith('/settings');
-
-                        if (isFullLayout) {
-                            // Helper for App Shell Skeleton (Sidebar + Header) - EXACT match to Gallery/Wallet structure
-                            const AppShellSkeleton = ({ children }: { children: React.ReactNode }) => (
-                                <div className="w-full h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-                                    {/* Sidebar Skeleton - matches Sidebar component exactly */}
-                                    <aside className="hidden lg:flex w-56 h-full flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 z-30 shrink-0 shadow-sm">
-                                        {/* Logo */}
-                                        <div className="h-16 flex items-center px-5 border-b border-slate-100 dark:border-gray-700 shrink-0">
-                                            <div className="h-8 w-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg animate-pulse" />
-                                            <div className="h-5 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse ml-2.5" />
-                                        </div>
-                                        {/* Nav Items */}
-                                        <nav className="flex-1 py-4 px-3 space-y-1">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
-                                                    <div className="size-5 rounded-lg bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                                    <div className="h-4 w-24 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
-                                                </div>
-                                            ))}
-                                        </nav>
-                                        {/* Profile */}
-                                        <div className="p-3 mt-auto border-t border-slate-100 dark:border-gray-700">
-                                            <div className="flex items-center gap-3 p-2">
-                                                <div className="size-9 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                                <div className="flex-1">
-                                                    <div className="h-4 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                                    <div className="h-3 w-28 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse mt-1" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </aside>
-
-                                    {/* Main Content Area - matches Gallery/Wallet main structure exactly */}
-                                    <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-                                        {/* Header Skeleton - matches Header component */}
-                                        <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-200/60 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shrink-0">
-                                            <div className="flex items-center gap-2">
-                                                <div className="lg:hidden size-8 bg-slate-100 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                                <div className="hidden sm:flex items-center gap-1.5">
-                                                    <div className="h-4 w-12 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                                    <div className="h-4 w-3 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                                                    <div className="h-4 w-24 bg-slate-300 dark:bg-gray-600 rounded animate-pulse" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-gray-800 rounded-lg">
-                                                    <div className="size-4 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                                    <div className="h-4 w-16 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                                </div>
-                                                <div className="h-9 w-24 bg-teal-100 dark:bg-teal-900/30 rounded-xl animate-pulse" />
-                                            </div>
-                                        </header>
-
-                                        {/* Content Area - matches Gallery/Wallet content padding */}
-                                        <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
-                                            {children}
-                                        </div>
-                                    </main>
-                                </div>
-                            );
-
-                            // Dashboard has its own complete skeleton (self-contained)
-                            if (path.startsWith('/dashboard')) {
-                                return getSkeletonContent();
-                            }
-
-                            // Generate pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
-                            if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings')) {
+                            // Special case for Email Support - Simple Loader (Bypass all Layout Skeletons)
+                            if (path.includes('/settings/support')) {
                                 return (
-                                    <AppShellSkeleton>
+                                    <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-gray-950">
+                                        <Loader2 className="h-10 w-10 animate-spin text-teal-600 dark:text-teal-400" />
+                                    </div>
+                                );
+                            }
+                            const isFullLayout = path === '/' ||
+                                path.includes('view=landing') ||
+                                path.includes('/features') ||
+                                path.includes('/solutions') ||
+                                path.includes('/pricing') ||
+                                path.includes('/results') ||
+                                path.includes('/get-started') ||
+                                path.startsWith('/dashboard') ||
+                                path.startsWith('/generate') ||
+                                path.startsWith('/gallery') ||
+                                path.startsWith('/wallet') ||
+                                path.startsWith('/settings');
+
+                            if (isFullLayout) {
+                                // Helper for App Shell Skeleton (Sidebar + Header) - EXACT match to Gallery/Wallet structure
+                                const AppShellSkeleton = ({ children }: { children: React.ReactNode }) => (
+                                    <div className="w-full h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+                                        {/* Sidebar Skeleton - matches Sidebar component exactly */}
+                                        <aside className="hidden lg:flex w-56 h-full flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 z-30 shrink-0 shadow-sm">
+                                            {/* Logo */}
+                                            <div className="h-16 flex items-center px-5 border-b border-slate-100 dark:border-gray-700 shrink-0">
+                                                <div className="h-8 w-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg animate-pulse" />
+                                                <div className="h-5 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse ml-2.5" />
+                                            </div>
+                                            {/* Nav Items */}
+                                            <nav className="flex-1 py-4 px-3 space-y-1">
+                                                {[1, 2, 3, 4, 5].map(i => (
+                                                    <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                                                        <div className="size-5 rounded-lg bg-slate-200 dark:bg-gray-700 animate-pulse" />
+                                                        <div className="h-4 w-24 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
+                                                    </div>
+                                                ))}
+                                            </nav>
+                                            {/* Profile */}
+                                            <div className="p-3 mt-auto border-t border-slate-100 dark:border-gray-700">
+                                                <div className="flex items-center gap-3 p-2">
+                                                    <div className="size-9 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
+                                                    <div className="flex-1">
+                                                        <div className="h-4 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                                        <div className="h-3 w-28 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse mt-1" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </aside>
+
+                                        {/* Main Content Area - matches Gallery/Wallet main structure exactly */}
+                                        <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+                                            {/* Header Skeleton - matches Header component */}
+                                            <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-200/60 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shrink-0">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="lg:hidden size-8 bg-slate-100 dark:bg-gray-700 rounded-lg animate-pulse" />
+                                                    <div className="hidden sm:flex items-center gap-1.5">
+                                                        <div className="h-4 w-12 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                                        <div className="h-4 w-3 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
+                                                        <div className="h-4 w-24 bg-slate-300 dark:bg-gray-600 rounded animate-pulse" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-gray-800 rounded-lg">
+                                                        <div className="size-4 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                                        <div className="h-4 w-16 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                                    </div>
+                                                    <div className="h-9 w-24 bg-teal-100 dark:bg-teal-900/30 rounded-xl animate-pulse" />
+                                                </div>
+                                            </header>
+
+                                            {/* Content Area - matches Gallery/Wallet content padding */}
+                                            <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
+                                                {children}
+                                            </div>
+                                        </main>
+                                    </div>
+                                );
+
+                                // Dashboard has its own complete skeleton (self-contained)
+                                if (path.startsWith('/dashboard')) {
+                                    return getSkeletonContent();
+                                }
+
+                                // Generate pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
+                                if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings')) {
+                                    return (
+                                        <AppShellSkeleton>
+                                            {getSkeletonContent()}
+                                        </AppShellSkeleton>
+                                    );
+                                }
+
+                                // For public pages, return simple wrapper
+                                return (
+                                    <div className="w-full h-full overflow-hidden bg-white dark:bg-gray-900">
                                         {getSkeletonContent()}
-                                    </AppShellSkeleton>
+                                    </div>
                                 );
                             }
 
-                            // For public pages, return simple wrapper
                             return (
-                                <div className="w-full h-full overflow-hidden bg-white dark:bg-gray-900">
-                                    {getSkeletonContent()}
+                                <div className="flex h-full w-full">
+                                    {/* Sidebar Skeleton (hidden on mobile) */}
+                                    <div className="hidden lg:flex w-56 flex-col border-r border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 gap-4 z-20 shrink-0">
+                                        {/* Logo Area */}
+                                        <div className="h-8 w-32 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse mb-6 flex items-center gap-2">
+                                            <div className="size-6 bg-slate-300 dark:bg-gray-600 rounded-md" />
+                                            <div className="h-4 flex-1 bg-slate-300 dark:bg-gray-600 rounded" />
+                                        </div>
+
+                                        {/* Nav Items */}
+                                        <div className="flex flex-col gap-2">
+                                            {[1, 2, 3, 4, 5].map((i) => (
+                                                <div key={i} className="h-10 w-full bg-slate-100 dark:bg-gray-700/50 rounded-lg animate-pulse" />
+                                            ))}
+                                        </div>
+
+                                        {/* Spacer */}
+                                        <div className="flex-1" />
+
+                                        {/* Bottom Profile Area */}
+                                        <div className="h-14 w-full bg-slate-100 dark:bg-gray-700/50 rounded-xl animate-pulse" />
+                                    </div>
+
+                                    {/* Main Content Skeleton */}
+                                    <div className="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden">
+                                        {/* Header Skeleton */}
+                                        <div className="h-14 border-b border-slate-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 p-4 flex items-center justify-between backdrop-blur-sm shrink-0">
+                                            <div className="flex items-center gap-2">
+                                                {/* Mobile Menu Button Placeholder */}
+                                                <div className="lg:hidden size-8 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                                                {/* Breadcrumb Placeholder */}
+                                                <div className="h-5 w-32 bg-slate-200 dark:bg-gray-700 rounded-md animate-pulse hidden md:block" />
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-24 bg-slate-200 dark:bg-gray-700 rounded-full animate-pulse hidden sm:block" />
+                                                <div className="size-8 bg-slate-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                                            </div>
+                                        </div>
+
+                                        {/* Dynamic Page Content Skeleton */}
+                                        <div className="flex-1 p-4 sm:p-6 overflow-hidden">
+                                            {getSkeletonContent()}
+                                        </div>
+                                    </div>
                                 </div>
                             );
-                        }
-
-                        return (
-                            <div className="flex h-full w-full">
-                                {/* Sidebar Skeleton (hidden on mobile) */}
-                                <div className="hidden lg:flex w-56 flex-col border-r border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 gap-4 z-20 shrink-0">
-                                    {/* Logo Area */}
-                                    <div className="h-8 w-32 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse mb-6 flex items-center gap-2">
-                                        <div className="size-6 bg-slate-300 dark:bg-gray-600 rounded-md" />
-                                        <div className="h-4 flex-1 bg-slate-300 dark:bg-gray-600 rounded" />
-                                    </div>
-
-                                    {/* Nav Items */}
-                                    <div className="flex flex-col gap-2">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <div key={i} className="h-10 w-full bg-slate-100 dark:bg-gray-700/50 rounded-lg animate-pulse" />
-                                        ))}
-                                    </div>
-
-                                    {/* Spacer */}
-                                    <div className="flex-1" />
-
-                                    {/* Bottom Profile Area */}
-                                    <div className="h-14 w-full bg-slate-100 dark:bg-gray-700/50 rounded-xl animate-pulse" />
-                                </div>
-
-                                {/* Main Content Skeleton */}
-                                <div className="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden">
-                                    {/* Header Skeleton */}
-                                    <div className="h-14 border-b border-slate-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 p-4 flex items-center justify-between backdrop-blur-sm shrink-0">
-                                        <div className="flex items-center gap-2">
-                                            {/* Mobile Menu Button Placeholder */}
-                                            <div className="lg:hidden size-8 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                            {/* Breadcrumb Placeholder */}
-                                            <div className="h-5 w-32 bg-slate-200 dark:bg-gray-700 rounded-md animate-pulse hidden md:block" />
-                                        </div>
-
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-24 bg-slate-200 dark:bg-gray-700 rounded-full animate-pulse hidden sm:block" />
-                                            <div className="size-8 bg-slate-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                                        </div>
-                                    </div>
-
-                                    {/* Dynamic Page Content Skeleton */}
-                                    <div className="flex-1 p-4 sm:p-6 overflow-hidden">
-                                        {getSkeletonContent()}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
+                        })()}
+                    </div>
                 </div>
-            </div>
+            )}
         </TransitionContext.Provider >
     );
 }

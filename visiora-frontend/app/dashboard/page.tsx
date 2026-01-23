@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "@/components/Link";
 import { useRouter } from "@/components/useRouter";
 import {
@@ -367,13 +368,52 @@ export default function DashboardPage() {
                 {/* Content - Scrollable on mobile/tablet, fixed on desktop */}
                 <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
                     <div className="flex flex-col gap-3 sm:gap-4 lg:h-full">
-                        {/* Page Header */}
-                        <div className="flex items-center justify-between shrink-0">
-                            <div>
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Overview</h2>
-                                <p className="text-slate-500 dark:text-gray-400 text-xs">Welcome back, {userName}. Here's what's happening today.</p>
+                        {/* Page Header with Animation */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="flex items-start justify-between shrink-0 bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm relative overflow-hidden"
+                        >
+                            <div className="z-10 relative">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight mb-1">
+                                    Welcome back, {userName} 👋
+                                </h2>
+                                <p className="text-slate-500 dark:text-gray-400 text-sm max-w-md">
+                                    Create <span className="font-bold relative inline-block">
+                                        {/* Glow effect behind text */}
+                                        <span className="absolute inset-0 bg-gradient-to-r from-teal-400 via-emerald-300 to-teal-400 opacity-20 blur-sm animate-shine" />
+                                        {/* Main text with gradient clip */}
+                                        <span className="relative bg-gradient-to-r from-teal-600 via-emerald-500 to-teal-600 dark:from-teal-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-shine">
+                                            Stunning Visuals
+                                        </span>
+                                    </span> instantly. No studio required. Just upload your product and let our AI generate photorealistic scenes.
+                                </p>
                             </div>
-                        </div>
+
+                            {/* Custom Keyframes for Shine Animation */}
+                            <style jsx global>{`
+                                @keyframes shine {
+                                    0% { background-position: 200% center; }
+                                    100% { background-position: -200% center; }
+                                }
+                                .animate-shine {
+                                    animation: shine 6s linear infinite;
+                                }
+                            `}</style>
+
+                            {/* Decorative Graphic */}
+                            <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-20 dark:opacity-10 bg-gradient-to-l from-teal-500/30 to-transparent pointer-events-none" />
+                            <div className="hidden sm:block">
+                                <Link
+                                    href="/generate"
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Start Creating
+                                </Link>
+                            </div>
+                        </motion.div>
 
                         {/* Stats Cards */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 shrink-0">

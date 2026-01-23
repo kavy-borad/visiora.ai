@@ -1,34 +1,29 @@
 "use client";
 
-import Link from "@/components/Link";
-import { useRouter } from "@/components/useRouter";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-    Sparkles,
+    Loader2,
+    AlertCircle,
+    CheckCircle,
     User,
     Mail,
     Lock,
     KeyRound,
     Eye,
     EyeOff,
-    ArrowRight,
-    Palette,
-    Zap,
-    ShieldCheck,
-    Rocket,
-    ShoppingBag,
-    Gem,
-    Loader2,
-    AlertCircle,
-    CheckCircle,
+    Check,
+    ArrowLeft
 } from "lucide-react";
 import React, { useState } from "react";
 import { authApi } from "@/lib/auth";
-import { AuthNavbar } from "@/components/layout";
 import { useTheme } from "@/lib/theme";
+import Branding from "@/components/Branding";
+import MorphLoopVisuals from "@/components/MorphLoopVisuals";
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { theme, toggleTheme } = useTheme();
+    const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
     // Redirect to dashboard if already logged in
@@ -99,7 +94,7 @@ export default function RegisterPage() {
             });
 
             if (response.success) {
-                setSuccess("Account created successfully! Redirecting to login...");
+                setSuccess("Account created successfully! Redirecting...");
                 // Store token if provided
                 if (response.data?.token) {
                     localStorage.setItem("token", response.data.token);
@@ -118,281 +113,208 @@ export default function RegisterPage() {
         }
     };
 
-    const features = [
-        { icon: Palette, title: "Free Credits", description: "1 free credit to start", color: "teal" },
-        { icon: Zap, title: "Instant Access", description: "No credit card required", color: "cyan" },
-        { icon: ShieldCheck, title: "Secure & Private", description: "Data encrypted & protected", color: "sky" },
-        { icon: Rocket, title: "Fast Generation", description: "Images in under 30 seconds", color: "blue" },
-        { icon: ShoppingBag, title: "Ecommerce Ready", description: "Photoshoot in minutes", color: "indigo" },
-        { icon: Gem, title: "Premium Quality", description: "Up to 4K resolution", color: "violet" },
-    ];
-
-    const getColorClasses = (color: string) => {
-        const colors: Record<string, { bg: string; text: string; shadow: string }> = {
-            teal: { bg: "bg-teal-50", text: "text-teal-600", shadow: "hover:shadow-teal-900/5" },
-            cyan: { bg: "bg-cyan-50", text: "text-cyan-600", shadow: "hover:shadow-cyan-900/5" },
-            sky: { bg: "bg-sky-50", text: "text-sky-600", shadow: "hover:shadow-sky-900/5" },
-            blue: { bg: "bg-blue-50", text: "text-blue-600", shadow: "hover:shadow-blue-900/5" },
-            indigo: { bg: "bg-indigo-50", text: "text-indigo-600", shadow: "hover:shadow-indigo-900/5" },
-            violet: { bg: "bg-violet-50", text: "text-violet-600", shadow: "hover:shadow-violet-900/5" },
-        };
-        return colors[color] || colors.teal;
-    };
-
     return (
-        <div className={`h-full flex flex-col relative overflow-hidden antialiased transition-colors duration-300 ${isDarkMode
-            ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
-            : "bg-gradient-hero"
-            }`}>
-            {/* Background Blobs */}
-            <div className={`blob w-[40rem] h-[40rem] top-0 left-0 -translate-x-1/3 -translate-y-1/3 fixed ${isDarkMode ? "bg-teal-900/30" : "bg-teal-100"
-                }`}></div>
-            <div className={`blob w-[35rem] h-[35rem] bottom-0 right-0 translate-x-1/4 translate-y-1/4 fixed ${isDarkMode ? "bg-slate-700/30" : "bg-slate-200"
-                }`}></div>
-            <div className={`blob w-96 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed ${isDarkMode ? "bg-sky-900/20" : "bg-sky-100"
-                }`}></div>
+        <div className="h-screen w-screen overflow-hidden flex items-stretch bg-white dark:bg-slate-900">
 
-            {/* Reusable Auth Navbar */}
-            <AuthNavbar
-                isDarkMode={isDarkMode}
-                onToggleDarkMode={toggleTheme}
-                currentPage="register"
-            />
+            {/* 1. Left Side - Compact Form with Tabs (Swapped) */}
+            <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative">
 
-            {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center px-4 md:px-6 z-10 py-2 overflow-y-auto">
-                <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-stretch my-auto">
-                    {/* Left Panel - Form */}
-                    <div className={`glass-panel rounded-2xl p-4 flex flex-col justify-center relative overflow-visible transition-colors duration-300 ${isDarkMode
-                        ? "bg-gray-800/90 border border-gray-700 shadow-2xl shadow-black/30"
-                        : "bg-white/85 border border-white/60 shadow-[20px_20px_60px_-15px_rgba(13,148,136,0.1),0_8px_10px_-6px_rgba(0,0,0,0.01)]"
-                        }`}>
+                {/* Branding Mobile Only */}
+                <div className="absolute top-6 left-6 lg:hidden">
+                    <Branding />
+                </div>
 
-                        {/* Header */}
-                        <div className="text-center mb-2 relative z-10">
-                            <div className={`inline-flex mb-2 p-1.5 rounded-xl shadow-sm transition-colors ${isDarkMode ? "bg-teal-900/50 text-teal-400" : "bg-teal-50 text-teal-500 shadow-teal-100/50"}`}>
-                                <Sparkles className="w-5 h-5" />
-                            </div>
-                            <h1 className={`text-lg sm:text-xl font-bold mb-0.5 tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Create Account</h1>
-                            <p className={`text-[11px] transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>Join the AI revolution and start creating today</p>
+                {/* Desktop: Back to Home */}
+                <Link
+                    href="/"
+                    className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors group"
+                >
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
+                        <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <span>Back to Home</span>
+                </Link>
+
+                <div className="w-full max-w-[380px] flex flex-col gap-5">
+
+                    {/* Tab Switcher (Sign In | Sign Up) */}
+                    <div className="bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-full grid grid-cols-2 mb-2">
+                        <Link href="/login" className="text-center py-2 text-sm font-medium text-slate-500 dark:text-slate-400 rounded-full hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                            Sign In
+                        </Link>
+                        <div className="text-center py-2 text-sm font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-full cursor-default">
+                            Sign Up
                         </div>
+                    </div>
 
-                        {/* Error/Success Messages */}
-                        <div className="min-h-[40px] mb-1">
+                    {/* Header */}
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create Account</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Start your creative journey with Visiora.</p>
+                    </div>
+
+                    {/* Error/Success Messages - Fixed Height Reserve */}
+                    {(error || success) && (
+                        <div className="w-full animate-in fade-in slide-in-from-top-2">
                             {error && (
-                                <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${isDarkMode ? "bg-red-900/30 border border-red-800 text-red-400" : "bg-red-50 border border-red-200 text-red-600"}`}>
-                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-red-900/20 border border-red-800/50 text-red-400" : "bg-red-50 border border-red-100 text-red-600"}`}>
+                                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                                     <span>{error}</span>
                                 </div>
                             )}
                             {success && (
-                                <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${isDarkMode ? "bg-green-900/30 border border-green-800 text-green-400" : "bg-green-50 border border-green-200 text-green-600"}`}>
-                                    <CheckCircle className="w-4 h-4 shrink-0" />
+                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-green-900/20 border border-green-800/50 text-green-400" : "bg-green-50 border border-green-100 text-green-600"}`}>
+                                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
                                     <span>{success}</span>
                                 </div>
                             )}
                         </div>
+                    )}
 
-                        {/* Form */}
-                        <form className="space-y-2 relative z-10" onSubmit={handleSubmit}>
-                            {/* Full Name */}
-                            <div className="space-y-0.5">
-                                <label className={`text-[10px] font-semibold uppercase tracking-wider ml-1 transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="fullname">
-                                    Full Name
-                                </label>
-                                <div className="relative group/input">
-                                    <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
-                                    <input
-                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
-                                            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
-                                            : "bg-white/60 border-slate-200 text-slate-800"
-                                            }`}
-                                        id="fullName"
-                                        placeholder="John Doe"
-                                        type="text"
-                                        value={formData.fullName}
-                                        onChange={handleChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Email */}
-                            <div className="space-y-0.5">
-                                <label className={`text-[10px] font-semibold uppercase tracking-wider ml-1 transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="email">
-                                    Email Address
-                                </label>
-                                <div className="relative group/input">
-                                    <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
-                                    <input
-                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
-                                            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
-                                            : "bg-white/60 border-slate-200 text-slate-800"
-                                            }`}
-                                        id="email"
-                                        placeholder="you@example.com"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div className="space-y-0.5">
-                                <label className={`text-[10px] font-semibold uppercase tracking-wider ml-1 transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="password">
-                                    Password
-                                </label>
-                                <div className="relative group/input">
-                                    <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
-                                    <input
-                                        className={`w-full pl-9 pr-9 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
-                                            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
-                                            : "bg-white/60 border-slate-200 text-slate-800"
-                                            }`}
-                                        id="password"
-                                        placeholder="Min 8 characters"
-                                        type={showPassword ? "text" : "password"}
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        disabled={isLoading}
-                                    />
-                                    <button
-                                        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${isDarkMode ? "text-gray-500 hover:text-gray-300" : "text-slate-400 hover:text-slate-600"}`}
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                                <p className={`text-[10px] mt-1 ml-1 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-500"}`}>
-                                    The password must include at least one uppercase letter, one lowercase letter and one number
-                                </p>
-                            </div>
-
-                            {/* Confirm Password */}
-                            <div className="space-y-0.5">
-                                <label className={`text-[10px] font-semibold uppercase tracking-wider ml-1 transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="confirm-password">
-                                    Confirm Password
-                                </label>
-                                <div className="relative group/input">
-                                    <KeyRound className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
-                                    <input
-                                        className={`w-full pl-9 pr-9 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
-                                            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
-                                            : "bg-white/60 border-slate-200 text-slate-800"
-                                            }`}
-                                        id="confirmPassword"
-                                        placeholder="Re-enter password"
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        disabled={isLoading}
-                                    />
-                                    <button
-                                        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${isDarkMode ? "text-gray-500 hover:text-gray-300" : "text-slate-400 hover:text-slate-600"}`}
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    >
-                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Terms Checkbox */}
-                            <div className="flex items-start gap-2 mt-2 ml-1">
-                                <div className="relative flex items-center pt-0.5">
-                                    <input
-                                        className={`w-3.5 h-3.5 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${isDarkMode ? "border-gray-600 bg-gray-700" : "border-slate-300"}`}
-                                        id="terms"
-                                        type="checkbox"
-                                        checked={formData.terms}
-                                        onChange={handleChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                                <label className={`text-xs select-none leading-tight transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="terms">
-                                    I agree to the{" "}
-                                    <a className={`font-medium hover:underline ${isDarkMode ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`} href="#">
-                                        Terms
-                                    </a>{" "}
-                                    and{" "}
-                                    <a className={`font-medium hover:underline ${isDarkMode ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`} href="#">
-                                        Privacy Policy
-                                    </a>
-                                </label>
-                            </div>
-
-                            {/* Submit Button */}
-                            <button
-                                className="w-full py-2 px-4 bg-gradient-to-r from-teal-500 to-slate-600 hover:from-teal-600 hover:to-slate-700 text-white font-semibold rounded-lg shadow-lg shadow-teal-500/20 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 group/btn mt-1.5 text-sm disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                type="submit"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span>Creating Account...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Create Account</span>
-                                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                                    </>
-                                )}
-                            </button>
-                        </form>
-
-                        {/* Sign In Link */}
-                        <div className="mt-3 text-center relative z-10">
-                            <p className={`text-xs transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>
-                                Already have an account?{" "}
-                                <Link className={`font-semibold transition-colors ${isDarkMode ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`} href="/login">
-                                    Sign in
-                                </Link>
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Right Panel - Features */}
-                    <div className={`glass-panel rounded-2xl p-4 flex-col justify-center relative hidden lg:flex transition-colors duration-300 ${isDarkMode
-                        ? "bg-gray-800/40 border border-gray-700"
-                        : "bg-white/40 border border-white/50"
-                        }`}>
-                        <div className="relative z-10">
-                            <h2 className={`text-base font-bold mb-3 text-center lg:text-left transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Why Join Us?</h2>
-                            <div className="grid gap-1.5">
-                                {features.map((feature, index) => {
-                                    const colorClasses = getColorClasses(feature.color);
-                                    return (
-                                        <div
-                                            key={index}
-                                            className={`group backdrop-blur-md p-2 rounded-xl flex items-center gap-3 transition-all hover:-translate-y-0.5 ${isDarkMode
-                                                ? "bg-gray-700/60 border border-gray-600 hover:bg-gray-700/80 hover:shadow-lg"
-                                                : `bg-white/60 border border-white/60 hover:bg-white/80 hover:shadow-md ${colorClasses.shadow}`
-                                                }`}
-                                        >
-                                            <div className={`w-8 h-8 rounded-lg ${isDarkMode ? "bg-opacity-30" : ""} ${colorClasses.bg} flex items-center justify-center shrink-0 ${colorClasses.text} group-hover:scale-110 transition-transform`}>
-                                                <feature.icon className="w-4 h-4" />
-                                            </div>
-                                            <div>
-                                                <h3 className={`font-semibold text-sm leading-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>{feature.title}</h3>
-                                                <p className={`text-[11px] transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>{feature.description}</p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                    {/* Form - Compact Spacing */}
+                    <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
+                        {/* Full Name */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="fullName"
+                                    type="text"
+                                    placeholder="Full Name"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
                             </div>
                         </div>
+
+                        {/* Email */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="email"
+                                    type="email"
+                                    placeholder="Email address"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-10 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="confirmPassword"
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    placeholder="Confirm Password"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-10 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Terms */}
+                        <div className="">
+                            <label className="flex items-start gap-2.5 cursor-pointer group">
+                                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${formData.terms ? "bg-emerald-600 border-emerald-600" : "border-slate-300 dark:border-slate-600 bg-transparent group-hover:border-slate-400"}`}>
+                                    {formData.terms && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <input
+                                    id="terms"
+                                    type="checkbox"
+                                    checked={formData.terms}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="hidden"
+                                />
+                                <span className="text-xs text-slate-500 dark:text-slate-400 leading-snug select-none">
+                                    I agree to the <a href="#" className="font-semibold text-slate-900 dark:text-white hover:underline">Terms</a> and <a href="#" className="font-semibold text-slate-900 dark:text-white hover:underline">Privacy Policy</a>
+                                </span>
+                            </label>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full h-10 mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.98] text-sm"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>Creating Account...</span>
+                                </>
+                            ) : (
+                                "Sign Up"
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Google Button - Visual Only Match */}
+                    <button
+                        type="button"
+                        className="w-full h-10 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                        onClick={() => { }} // Could hook up Google auth later
+                    >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <div className="w-full text-center text-[10px] text-slate-400">
+                        © 2026 Visiora AI. All rights reserved.
                     </div>
                 </div>
-            </main>
+            </div>
 
-            {/* Footer */}
-            <footer className="text-center py-2 text-[10px] text-slate-400 z-10 shrink-0">
-                © 2026 Visiora AI. All rights reserved.
-            </footer>
+            {/* 2. Right Side - Visuals (Swapped) */}
+            <div className="hidden lg:block w-[45%] h-full p-4">
+                <div className="w-full h-full rounded-[2rem] overflow-hidden relative shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                    <MorphLoopVisuals />
+                </div>
+            </div>
         </div>
     );
 }

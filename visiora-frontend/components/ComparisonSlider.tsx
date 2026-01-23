@@ -38,7 +38,7 @@ export default function ComparisonSlider({
         const controls = animate(0, 100, {
             duration: 2.5,
             ease: "easeInOut",
-            delay: 0.5,
+            delay: 1.5,
             onUpdate: (value) => {
                 if (!isDragging) setSliderPosition(value);
             },
@@ -113,7 +113,7 @@ export default function ComparisonSlider({
     return (
         <div
             ref={containerRef}
-            className={`relative w-full overflow-hidden rounded-2xl select-none cursor-ew-resize group shadow-2xl shadow-emerald-900/10 border border-slate-200 dark:border-gray-800 bg-white dark:bg-slate-900`}
+            className={`relative w-full overflow-hidden rounded-2xl select-none cursor-ew-resize group shadow-2xl shadow-emerald-900/10 bg-white dark:bg-slate-900`}
             style={{ aspectRatio }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleMouseDown}
@@ -124,7 +124,7 @@ export default function ComparisonSlider({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.4 }}
                     className="absolute inset-0 w-full h-full"
                 >
                     {/* After Image (Background - Full Width) */}

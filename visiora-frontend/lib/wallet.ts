@@ -20,22 +20,29 @@ export interface WalletBalance {
 
 export interface Transaction {
     id: string;
-    type: 'credit' | 'debit' | 'refund' | 'promotional';
+    type: 'credit' | 'debit' | 'refund' | 'bonus';
+    category?: 'top_up' | 'image_generation' | 'subscription' | 'refund' | 'bonus' | 'referral' | 'adjustment';
     amount: number;
     currency: string;
     description: string;
     status: 'completed' | 'pending' | 'failed';
-    createdAt: string;
+    createdAt: string;      // Frontend uses camelCase
+    created_at?: string;    // Backend returns snake_case
     metadata?: {
         generationId?: string;
         paymentMethod?: string;
         promoCode?: string;
+        orderId?: string;
     };
 }
 
 export interface TransactionFilters {
-    type?: 'credit' | 'debit' | 'refund' | 'promotional';
+    type?: 'credit' | 'debit' | 'refund' | 'bonus';
+    category?: 'top_up' | 'image_generation' | 'subscription' | 'refund' | 'bonus' | 'referral' | 'adjustment';
     status?: 'completed' | 'pending' | 'failed';
+    days?: number;
+    sortBy?: string;
+    sortOrder?: 'ASC' | 'DESC';
     startDate?: string;
     endDate?: string;
 }
@@ -234,15 +241,81 @@ export const walletApi = {
             limit: limit.toString(),
         });
 
+        // Add filter parameters matching backend API
+        if (filters?.days) params.append('days', filters.days.toString());
         if (filters?.type) params.append('type', filters.type);
+        if (filters?.category) params.append('category', filters.category);
         if (filters?.status) params.append('status', filters.status);
+        if (filters?.sortBy) params.append('sortBy', filters.sortBy);
+        if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
         if (filters?.startDate) params.append('startDate', filters.startDate);
         if (filters?.endDate) params.append('endDate', filters.endDate);
 
         try {
+            console.log('[Wallet] Fetching transactions with params:', params.toString());
             const res = await api.get(`/wallet/transactions?${params.toString()}`);
-            return { success: true, data: res.data };
+            console.log('[Wallet] Transactions API response:', res.data);
+
+            // Parse response - handle different response structures
+            let transactionsData: Transaction[] = [];
+            let total = 0;
+            let hasMore = false;
+
+            // Actual API response: { success: true, data: [...], pagination: {...} }
+            if (res.data?.success && res.data?.data) {
+                const data = res.data.data;
+                const pagination = res.data.pagination;
+
+                // data is directly the transactions array
+                if (Array.isArray(data)) {
+                    transactionsData = data;
+                    total = pagination?.total || data.length;
+                    hasMore = pagination?.hasNext || false;
+                    console.log('[Wallet] Parsed from { success, data: [...], pagination }:', data.length, 'transactions');
+                } else if (data.transactions && Array.isArray(data.transactions)) {
+                    // Fallback: { success, data: { transactions: [...] } }
+                    transactionsData = data.transactions;
+                    total = data.total || pagination?.total || data.transactions.length;
+                    hasMore = data.hasMore || pagination?.hasNext || false;
+                }
+            } else if (res.data?.transactions && Array.isArray(res.data.transactions)) {
+                // Direct: { transactions: [...], total, ... }
+                transactionsData = res.data.transactions;
+                total = res.data.total || res.data.transactions.length;
+                hasMore = res.data.hasMore || false;
+            } else if (Array.isArray(res.data)) {
+                // Direct array
+                transactionsData = res.data;
+                total = res.data.length;
+            }
+
+            // Normalize fields for each transaction
+            const normalizedTransactions: Transaction[] = transactionsData.map((tx: any) => ({
+                id: tx.id,
+                type: tx.type,
+                category: tx.category,
+                amount: Number(tx.amount || 0),
+                currency: tx.currency || 'INR',
+                description: tx.description || tx.title || '',
+                status: tx.paymentStatus || tx.status || 'completed', // Use paymentStatus from API
+                createdAt: tx.createdAt || tx.created_at || new Date().toISOString(),
+                metadata: tx.metadata || {},
+            }));
+
+            console.log('[Wallet] Parsed transactions:', normalizedTransactions.length);
+
+            return {
+                success: true,
+                data: {
+                    transactions: normalizedTransactions,
+                    total,
+                    page,
+                    limit,
+                    hasMore,
+                }
+            };
         } catch (err: any) {
+            console.error('[Wallet] getTransactions error:', err);
             return { success: false, error: err.response?.data?.message || 'Failed to load transactions' };
         }
     },

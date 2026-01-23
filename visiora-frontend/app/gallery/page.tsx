@@ -18,7 +18,6 @@ import { Sidebar, Header } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function GalleryPage() {
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     // Search and filter state
     const [searchQuery, setSearchQuery] = useState("");
@@ -42,9 +41,38 @@ export default function GalleryPage() {
     // Multi-select for bulk delete
     const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
     const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
     const [selectMode, setSelectMode] = useState(false);
 
-    // Ref to skip search on first render
+    // Custom Dropdown State for Filters
+    const [activeDropdown, setActiveDropdown] = useState<'type' | 'sort' | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const typeOptions = [
+        { value: 'all', label: 'All Types' },
+        { value: 'generated', label: 'Generated' },
+        { value: 'uploaded', label: 'Uploaded' }
+    ];
+
+    const sortOptions = [
+        { value: 'newest', label: 'Newest First' },
+        { value: 'oldest', label: 'Oldest First' },
+        { value: 'name', label: 'By Name' }
+    ];
+
     const isSearchMounted = useRef(false);
 
     // Ref to track if initial fetch has been done (within component lifecycle)
@@ -84,6 +112,17 @@ export default function GalleryPage() {
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
+
+    // Handle filter changes
+    const isFilterMounted = useRef(false);
+    useEffect(() => {
+        if (!isFilterMounted.current) {
+            isFilterMounted.current = true;
+            return;
+        }
+        console.log('🔍 Gallery: Filters changed, fetching...');
+        fetchGalleryImages(1);
+    }, [sortOrder, filterType]);
 
     const fetchGalleryImages = async (page: number = 1) => {
         setIsLoading(true);
@@ -132,17 +171,11 @@ export default function GalleryPage() {
         }
     };
 
-    // Apply filters
-    const handleApplyFilters = () => {
-        setShowFilterDropdown(false);
-        fetchGalleryImages();
-    };
-
     // Reset filters
     const handleResetFilters = () => {
         setSortOrder('newest');
         setFilterType('all');
-        setShowFilterDropdown(false);
+        setActiveDropdown(null);
     };
 
     // Delete image - calls DELETE /api/gallery/{id}
@@ -401,34 +434,34 @@ export default function GalleryPage() {
                             </div>
 
                             {/* Toolbar */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {/* Bulk Delete Controls */}
                                 {selectMode ? (
                                     <div className="flex items-center gap-2 mr-2">
-                                        <span className="text-xs text-slate-500 dark:text-gray-400">
+                                        <span className="text-xs text-slate-500 dark:text-gray-400 font-medium px-2">
                                             {selectedImages.size} selected
                                         </span>
                                         <button
                                             onClick={selectAllImages}
-                                            className="px-2 py-1 text-xs font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded transition-colors"
+                                            className="px-3 py-2 text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50/50 dark:bg-teal-900/20 hover:bg-teal-100 dark:hover:bg-teal-900/40 rounded-xl transition-all border border-teal-200/50 dark:border-teal-800/50"
                                         >
                                             Select All
                                         </button>
                                         <button
                                             onClick={handleBulkDelete}
                                             disabled={selectedImages.size === 0 || isBulkDeleting}
-                                            className="px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            className="px-3 py-2 text-xs font-semibold text-red-600 bg-red-50/50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/50 dark:border-red-800/50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                                         >
                                             {isBulkDeleting ? (
-                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                             ) : (
-                                                <Trash2 className="w-3 h-3" />
+                                                <Trash2 className="w-3.5 h-3.5" />
                                             )}
                                             Delete
                                         </button>
                                         <button
                                             onClick={clearSelection}
-                                            className="px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                            className="px-3 py-2 text-xs font-semibold text-slate-500 bg-slate-100/50 dark:bg-gray-800/50 hover:bg-slate-200/50 dark:hover:bg-gray-700/50 border border-slate-200 dark:border-gray-700 rounded-xl transition-all"
                                         >
                                             Cancel
                                         </button>
@@ -436,120 +469,113 @@ export default function GalleryPage() {
                                 ) : (
                                     <button
                                         onClick={() => setSelectMode(true)}
-                                        className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 border border-slate-200 dark:border-gray-700 rounded-md transition-colors"
+                                        className="pl-3 pr-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500"
                                     >
+                                        <div className="w-4 h-4 rounded border-2 border-slate-400/60 flex items-center justify-center">
+                                            <div className="w-2 h-2 rounded-[1px] bg-slate-400/40" />
+                                        </div>
                                         Select
                                     </button>
                                 )}
 
                                 {/* Search */}
                                 <div className="relative group">
-                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
                                     {isLoading && (
-                                        <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 animate-spin" />
+                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 animate-spin" />
                                     )}
                                     <input
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-40 h-8 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-md pl-8 pr-8 text-xs text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none"
+                                        className="w-48 py-2.5 bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border border-slate-200/60 dark:border-gray-700/60 rounded-xl pl-9 pr-9 text-xs font-semibold text-slate-700 dark:text-gray-200 placeholder-slate-400/80 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500/50 transition-all shadow-sm hover:bg-white/60 dark:hover:bg-gray-700/60"
                                         placeholder="Search filename..."
                                         type="text"
                                     />
                                 </div>
 
-                                {/* Filter Dropdown */}
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                                        className={`h-8 px-2.5 flex items-center gap-1.5 bg-white dark:bg-gray-800 border ${showFilterDropdown ? 'border-teal-500 ring-1 ring-teal-500 text-teal-600 dark:text-teal-400' : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'} rounded-md text-xs font-medium hover:border-teal-500 dark:hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 transition-all`}
-                                    >
-                                        <Filter className="w-3.5 h-3.5" />
-                                        <span>Filter</span>
-                                    </button>
+                                {/* Filters Row */}
+                                <div className="flex items-center gap-2" ref={dropdownRef}>
+                                    {/* Type Filter */}
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+                                            className={`pl-3 pr-8 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-sm transition-all
+                                                ${activeDropdown === 'type'
+                                                    ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                    : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                        >
+                                            <Filter className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'type' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                            <span>{typeOptions.find(o => o.value === filterType)?.label}</span>
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'type' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                            </div>
+                                        </button>
 
-                                    {/* Dropdown Menu */}
-                                    {showFilterDropdown && (
-                                        <>
-                                            <div
-                                                className="fixed inset-0 z-40 bg-transparent"
-                                                onClick={() => setShowFilterDropdown(false)}
-                                            />
-                                            <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                                                {/* Header */}
-                                                <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-800 flex items-center justify-between bg-white/50 dark:bg-gray-800/50">
-                                                    <div>
-                                                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">Filter Gallery</h3>
-                                                        <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-0.5">Refine your artwork collection</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setShowFilterDropdown(false)}
-                                                        className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors p-1 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-full"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                {/* Content */}
-                                                <div className="p-5 flex flex-col gap-5">
-                                                    {/* Image Type */}
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">
-                                                            Image Type
-                                                        </label>
-                                                        <div className="relative group">
-                                                            <select
-                                                                value={filterType}
-                                                                onChange={(e) => setFilterType(e.target.value as any)}
-                                                                className="w-full h-10 pl-3 pr-10 text-sm bg-slate-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 text-slate-700 dark:text-gray-200 transition-all cursor-pointer shadow-sm"
-                                                            >
-                                                                <option value="all">All Types</option>
-                                                                <option value="generated">Generated</option>
-                                                                <option value="uploaded">Uploaded</option>
-                                                            </select>
-                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-teal-500 transition-colors">
-                                                                <ChevronDown className="w-4 h-4" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Sort Order */}
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Sort Order</label>
-                                                        <div className="relative group">
-                                                            <select
-                                                                value={sortOrder}
-                                                                onChange={(e) => setSortOrder(e.target.value as any)}
-                                                                className="w-full h-10 pl-3 pr-10 text-sm bg-slate-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 text-slate-700 dark:text-gray-200 transition-all cursor-pointer shadow-sm"
-                                                            >
-                                                                <option value="newest">Newest First</option>
-                                                                <option value="oldest">Oldest First</option>
-                                                                <option value="name">By Name</option>
-                                                            </select>
-                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-teal-500 transition-colors">
-                                                                <ChevronDown className="w-4 h-4" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Actions */}
-                                                    <div className="flex items-center gap-3 pt-2 font-medium">
+                                        {/* Dropdown Menu */}
+                                        {activeDropdown === 'type' && (
+                                            <div className="absolute top-full left-0 mt-2 w-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                <div className="p-1.5 flex flex-col gap-0.5">
+                                                    {typeOptions.map((option) => (
                                                         <button
-                                                            onClick={handleResetFilters}
-                                                            className="flex-1 h-10 bg-slate-100 hover:bg-slate-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-gray-600"
+                                                            key={option.value}
+                                                            onClick={() => {
+                                                                setFilterType(option.value as any);
+                                                                setActiveDropdown(null);
+                                                            }}
+                                                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                ${filterType === option.value
+                                                                    ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                }`}
                                                         >
-                                                            Reset
+                                                            {option.label}
                                                         </button>
-                                                        <button
-                                                            onClick={handleApplyFilters}
-                                                            className="flex-[2] h-10 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white text-xs rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5"
-                                                        >
-                                                            Apply Filters
-                                                        </button>
-                                                    </div>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        </>
-                                    )}
+                                        )}
+                                    </div>
+
+                                    {/* Sort Filter */}
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setActiveDropdown(activeDropdown === 'sort' ? null : 'sort')}
+                                            className={`pl-3 pr-8 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-sm transition-all
+                                                ${activeDropdown === 'sort'
+                                                    ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                    : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                        >
+                                            <span className="text-slate-400 dark:text-gray-500 font-normal">Sort:</span>
+                                            <span>{sortOptions.find(o => o.value === sortOrder)?.label}</span>
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'sort' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                            </div>
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {activeDropdown === 'sort' && (
+                                            <div className="absolute top-full left-0 mt-2 w-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                <div className="p-1.5 flex flex-col gap-0.5">
+                                                    {sortOptions.map((option) => (
+                                                        <button
+                                                            key={option.value}
+                                                            onClick={() => {
+                                                                setSortOrder(option.value as any);
+                                                                setActiveDropdown(null);
+                                                            }}
+                                                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                ${sortOrder === option.value
+                                                                    ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                }`}
+                                                        >
+                                                            {option.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
