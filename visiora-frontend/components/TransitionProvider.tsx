@@ -126,7 +126,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
         // 0. Disable Loader for Auth Pages
         // We want these pages to load instantly with their own internal animations
-        if (path.includes('/login') || path.includes('/register') || path.includes('/signup')) {
+        if (path.includes('/login') || path.includes('/register') || path.includes('/signup') || path.includes('/features') || path.includes('/solutions')) {
             return null;
         }
 
@@ -349,139 +349,10 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
             );
         }
 
-        // 2. Features Skeleton
-        if (path.includes('/features')) {
-            return (
-                <div className="min-h-screen lg:h-screen w-screen overflow-x-hidden bg-gradient-to-br from-teal-50/50 via-sky-50/30 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col">
-                    {/* Public Navbar Skeleton */}
-                    <div className="shrink-0 border-b border-slate-200/60 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 relative w-full">
-                        <div className="px-4 sm:px-6 md:px-10 py-3 max-w-[1440px] mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="h-9 sm:h-10 w-9 sm:w-10 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-5 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            </div>
-                            <div className="hidden lg:flex gap-8">
-                                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-4 w-20 bg-slate-200 dark:bg-gray-700/50 rounded animate-pulse" />)}
-                            </div>
-                            <div className="hidden lg:flex gap-3">
-                                <div className="size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-20 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-28 bg-teal-500/20 dark:bg-teal-900/20 rounded-lg animate-pulse" />
-                            </div>
-                            <div className="lg:hidden size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                        </div>
-                    </div>
 
-                    <main className="flex-1 flex flex-col items-center overflow-y-auto lg:overflow-hidden relative">
-                        <section className="w-full max-w-[1440px] 2xl:max-w-[1600px] px-4 sm:px-6 md:px-8 2xl:px-12 py-4 mx-auto relative z-10 flex flex-col flex-1 overflow-y-auto lg:overflow-hidden">
-                            {/* Header Section */}
-                            <div className="shrink-0 flex flex-col items-center text-center gap-2 mb-4 max-w-3xl mx-auto w-full">
-                                <div className="h-6 w-20 bg-white dark:bg-gray-800 border border-teal-200/50 dark:border-gray-700 rounded-full animate-pulse mb-2 shadow-sm" />
-                                <div className="h-8 sm:h-10 w-64 sm:w-80 bg-slate-900 dark:bg-white rounded-lg animate-pulse mb-1" />
-                                <div className="h-4 sm:h-5 w-full max-w-lg bg-slate-400 dark:bg-gray-600 rounded animate-pulse" />
-                            </div>
-
-                            {/* Features Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 auto-rows-fr pb-4">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="flex flex-col p-5 bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl animate-pulse gap-4 shadow-sm">
-                                        <div className="size-10 bg-teal-50 dark:bg-gray-700 rounded-lg mb-2" />
-                                        <div className="h-6 w-32 bg-slate-800 dark:bg-gray-100 rounded mb-1.5" />
-                                        <div className="space-y-2">
-                                            <div className="h-3 w-full bg-slate-100 dark:bg-gray-700/50 rounded" />
-                                            <div className="h-3 w-[90%] bg-slate-100 dark:bg-gray-700/50 rounded" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    </main>
-                </div>
-            );
-        }
 
         // 3. Solutions Skeleton
-        if (path.includes('/solutions')) {
-            return (
-                <div className="min-h-screen w-screen bg-visiora-gradient overflow-x-hidden flex flex-col">
-                    {/* Public Navbar */}
-                    <div className="shrink-0 border-b border-slate-200/60 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 relative w-full">
-                        <div className="px-4 sm:px-6 md:px-10 py-3 max-w-[1440px] mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="h-9 sm:h-10 w-9 sm:w-10 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-5 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            </div>
-                            <div className="hidden lg:flex gap-8">
-                                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-4 w-20 bg-slate-200 dark:bg-gray-700/50 rounded animate-pulse" />)}
-                            </div>
-                            <div className="hidden lg:flex gap-3">
-                                <div className="size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-20 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-28 bg-teal-500/20 dark:bg-teal-900/20 rounded-lg animate-pulse" />
-                            </div>
-                            <div className="lg:hidden size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                        </div>
-                    </div>
 
-                    <main className="flex-1 flex flex-col overflow-y-auto lg:overflow-hidden">
-                        <section className="relative flex-1 flex flex-col py-4 lg:py-6 overflow-hidden">
-                            <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
-                                {/* Header */}
-                                <div className="shrink-0 mx-auto max-w-3xl text-center mb-4 lg:mb-6 w-full">
-                                    <div className="h-5 w-24 bg-teal-100 dark:bg-teal-900/30 rounded-full animate-pulse border border-teal-200 dark:border-teal-800 mb-2 mx-auto" />
-                                    <div className="h-8 w-56 bg-slate-900 dark:bg-white rounded-lg animate-pulse mx-auto mb-1" />
-                                    <div className="h-4 w-64 bg-slate-500 dark:bg-gray-500 rounded animate-pulse mx-auto" />
-                                </div>
-
-                                {/* Timeline */}
-                                <div className="relative max-w-5xl mx-auto flex-1 flex flex-col justify-center w-full">
-                                    {/* Center Line */}
-                                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-200 dark:bg-gray-800 -translate-x-1/2 hidden lg:block" />
-
-                                    <div className="space-y-4 lg:space-y-0">
-                                        {/* Step 1: Left Card */}
-                                        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-center mb-8">
-                                            <div className="lg:text-right order-2 lg:order-1 flex justify-end">
-                                                <div className="w-full lg:max-w-md h-40 bg-white/60 dark:bg-gray-800/60 backdrop-blur rounded-xl border border-white/80 dark:border-gray-700 p-4 lg:p-5 animate-pulse flex flex-col items-start lg:items-end gap-3 shadow-sm">
-                                                    <div className="size-10 rounded-lg bg-teal-100 dark:bg-gray-700" />
-                                                    <div className="h-6 w-40 bg-slate-800 dark:bg-white rounded" />
-                                                    <div className="h-3 w-48 bg-slate-400 dark:bg-gray-500 rounded" />
-                                                </div>
-                                            </div>
-                                            <div className="hidden lg:block order-1 lg:order-2" />
-                                        </div>
-
-                                        {/* Step 2: Right Card */}
-                                        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-center mb-8">
-                                            <div className="hidden lg:block" />
-                                            <div className="flex justify-start">
-                                                <div className="w-full lg:max-w-md h-40 bg-white/60 dark:bg-gray-800/60 backdrop-blur rounded-xl border border-white/80 dark:border-gray-700 p-4 lg:p-5 animate-pulse flex flex-col items-start gap-3 shadow-sm">
-                                                    <div className="size-10 rounded-lg bg-teal-100 dark:bg-gray-700" />
-                                                    <div className="h-6 w-40 bg-slate-800 dark:bg-white rounded" />
-                                                    <div className="h-3 w-48 bg-slate-400 dark:bg-gray-500 rounded" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Step 3: Left Card */}
-                                        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-center">
-                                            <div className="lg:text-right order-2 lg:order-1 flex justify-end">
-                                                <div className="w-full lg:max-w-md h-40 bg-white/60 dark:bg-gray-800/60 backdrop-blur rounded-xl border border-white/80 dark:border-gray-700 p-4 lg:p-5 animate-pulse flex flex-col items-start lg:items-end gap-3 shadow-sm">
-                                                    <div className="size-10 rounded-lg bg-teal-100 dark:bg-gray-700" />
-                                                    <div className="h-6 w-40 bg-slate-800 dark:bg-white rounded" />
-                                                    <div className="h-3 w-48 bg-slate-400 dark:bg-gray-500 rounded" />
-                                                </div>
-                                            </div>
-                                            <div className="hidden lg:block order-1 lg:order-2" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </main>
-                </div>
-            );
-        }
 
         // 4. Pricing Skeleton
         if (path.includes('/pricing')) {

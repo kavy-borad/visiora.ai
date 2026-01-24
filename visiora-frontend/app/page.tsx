@@ -13,12 +13,13 @@ import {
     Zap,
     Users,
     Shield,
+    ArrowUpRight,
 } from "lucide-react";
 import { landingApi, LandingStats } from "@/lib/landing";
 import { PublicNavbar } from "@/components/layout";
 import { authApi } from "@/lib/auth";
-import { motion, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
-import ComparisonSlider from "@/components/ComparisonSlider";
+import { motion, useMotionValue, useSpring, useMotionTemplate, AnimatePresence } from "framer-motion";
+import ComparisonSlider from "@/components/ComparisonSlider"; // Keeping as it might be used inside
 import LandingVisuals from "@/components/LandingVisuals";
 
 export default function LandingPage() {
@@ -41,6 +42,17 @@ export default function LandingPage() {
         mouseY.set(clientY - top);
     }
     const [isLoading, setIsLoading] = useState(true);
+
+    // Sliding Text State
+    const [index, setIndex] = useState(0);
+    const words = ["Stunning Visuals", "Marketing Assets", "Viral Content", "Product Photos"];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % words.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Check auth on mount - redirect to dashboard if logged in
     // But allow viewing if user explicitly navigated here (via Home link)
@@ -155,7 +167,7 @@ export default function LandingPage() {
             {/* Main Content */}
             <main
                 onMouseMove={handleMouseMove}
-                className="flex-1 flex items-center justify-center relative px-4 sm:px-6 pt-20 pb-12 lg:pt-20 lg:pb-20 overflow-y-auto lg:overflow-hidden group"
+                className="flex-1 flex items-center justify-center relative px-4 sm:px-6 pt-28 pb-12 lg:pt-32 lg:pb-20 overflow-y-auto lg:overflow-hidden group"
             >
                 {/* Interactive Background: Mouse Spotlight */}
                 {/* Interactive Background: Tech Grid Reveal */}
@@ -184,12 +196,15 @@ export default function LandingPage() {
                     {/* Left Column - Hero Text */}
                     {/* Left Column - Hero Text */}
                     <div className="max-w-xl mx-auto lg:mx-0 text-center lg:text-left relative z-10">
+                        {/* Restored Static Color Effect (Glow) - Reduced Intensity */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-teal-400/10 dark:bg-teal-500/5 rounded-full blur-[80px] -z-10" />
+
                         {/* Badge */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-teal-100 dark:border-gray-700 mb-3 sm:mb-5 shadow-sm"
+                            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-teal-100 dark:border-gray-700 mb-3 sm:mb-5 shadow-sm mt-8"
                         >
                             <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse"></span>
                             <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 tracking-wide uppercase">AI-POWERED TECHNOLOGY</span>
@@ -200,28 +215,25 @@ export default function LandingPage() {
                             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl 2xl:text-7xl font-bold leading-[1.1] mb-4 sm:mb-6 tracking-tight text-slate-900 dark:text-white"
+                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl 2xl:text-7xl font-bold leading-[1.2] mb-2 sm:mb-4 tracking-tight text-slate-900 dark:text-white"
                         >
                             Transform Products into <br className="hidden sm:block" />
 
-                            {/* 2. Highlighted Text - Stunning Visuals (One-time Glow Sweep) */}
-                            <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-400 dark:from-teal-400 dark:to-teal-300">
-                                Stunning Visuals
-                                {/* Moving Glow Overlay */}
-                                <motion.span
-                                    initial={{ x: "-100%", opacity: 0 }}
-                                    animate={{ x: "120%", opacity: [0, 0.8, 0.8, 0] }}
-                                    transition={{
-                                        duration: 2.5,
-                                        ease: "easeInOut",
-                                        delay: 0.8,
-                                        times: [0, 0.2, 0.8, 1]
-                                    }}
-                                    className="absolute inset-0 block bg-gradient-to-r from-transparent via-emerald-100/50 to-transparent bg-clip-text text-transparent pointer-events-none will-change-transform"
-                                    aria-hidden="true"
-                                >
-                                    Stunning Visuals
-                                </motion.span>
+                            <span className="block overflow-hidden relative">
+                                <AnimatePresence mode="wait">
+                                    <motion.span
+                                        key={index}
+                                        initial={{ y: "100%", opacity: 0, filter: "blur(8px)" }}
+                                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                                        exit={{ y: "-100%", opacity: 0, filter: "blur(8px)" }}
+                                        transition={{ duration: 0.6, ease: "circOut" }}
+                                        className="absolute left-0 top-0 w-full block text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-400 dark:from-teal-400 dark:to-teal-300 pb-4 pt-1"
+                                    >
+                                        {words[index]}
+                                    </motion.span>
+                                </AnimatePresence>
+                                {/* Invisible copy to hold width and height */}
+                                <span className="block opacity-0 pb-4 pt-1" aria-hidden="true">Stunning Visuals</span>
                             </span>
                         </motion.h1>
 
@@ -230,41 +242,44 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.8 }} // 0.8s total delay
-                            className="text-base sm:text-lg 2xl:text-xl text-slate-500 dark:text-gray-400 leading-relaxed mb-6 sm:mb-8 max-w-md 2xl:max-w-lg mx-auto lg:mx-0"
+                            className="text-base sm:text-lg 2xl:text-xl text-slate-500 dark:text-gray-400 leading-relaxed mb-4 sm:mb-6 max-w-md 2xl:max-w-lg mx-auto lg:mx-0"
                         >
                             Create professional product photography instantly. No studio required. Just upload your product and let our AI generate photorealistic scenes.
                         </motion.p>
 
                         {/* 4. & 5. CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row items-center sm:items-center justify-center lg:justify-start gap-4 mb-8 sm:mb-10">
-                            {/* Primary CTA - Start Creating Free */}
+                        <div className="flex flex-col sm:flex-row items-center sm:items-center justify-center lg:justify-start gap-4 mb-6 sm:mb-8">
+                            {/* Primary CTA - Premium Teal Gradient with Shine */}
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.96 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.5, delay: 1, ease: "easeOut" }}
-                                whileHover={{ scale: 1.02, boxShadow: "0 20px 25px -5px rgb(20 184 166 / 0.15), 0 8px 10px -6px rgb(20 184 166 / 0.1)" }}
-                                whileTap={{ scale: 0.98 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
                                 <Link
                                     href="/register"
-                                    className="px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-2xl transition-colors shadow-lg shadow-teal-500/20 flex items-center gap-2 text-base relative overflow-hidden group"
+                                    className="relative px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-bold rounded-full transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 flex items-center gap-2 text-base overflow-hidden group border border-teal-400/20"
                                 >
-                                    <span className="relative z-10">Start Creating Free</span>
-                                    <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-0.5 transition-transform" />
-                                    {/* Soft Bloom on Hover */}
-                                    <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    <span className="relative z-10">Get Started</span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                                 </Link>
                             </motion.div>
 
-                            {/* Secondary CTA - See How it Works */}
+                            {/* Secondary CTA - Structured Surface (Not just flat white) */}
                             <motion.div
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.5, delay: 1.2, ease: "easeOut" }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                <Link href="/solutions" className="px-8 py-4 bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-600 dark:text-gray-300 font-medium rounded-2xl transition-colors flex items-center gap-2 text-base group">
-                                    <Play className="w-4 h-4 text-slate-400 dark:text-gray-500 group-hover:text-teal-500 transition-colors" />
-                                    See How it Works
+                                <Link
+                                    href="/pricing"
+                                    className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-full transition-all border border-slate-200 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:border-teal-400 dark:hover:border-teal-500 hover:shadow-teal-500/10 hover:bg-slate-50 dark:hover:bg-slate-750 flex items-center gap-2 text-base"
+                                >
+                                    Pricing
+                                    <ArrowUpRight className="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors" />
                                 </Link>
                             </motion.div>
                         </div>
@@ -311,12 +326,12 @@ export default function LandingPage() {
                                     }
                                 }
                             }}
-                            className="flex flex-wrap sm:flex-nowrap items-center justify-center lg:justify-start gap-3 mt-5 sm:mt-8 w-full mx-auto lg:mx-0"
+                            className="flex flex-nowrap items-stretch justify-center lg:justify-start gap-3 mt-5 sm:mt-8 w-full mx-auto lg:mx-0"
                         >
                             {/* Stat 1 */}
                             <motion.div
                                 variants={{
-                                    hidden: { opacity: 0, x: -20, scale: 0.95 },
+                                    hidden: { opacity: 0, y: 20, scale: 0.95, x: 0 },
                                     visible: {
                                         opacity: 1,
                                         x: 0,
@@ -329,10 +344,10 @@ export default function LandingPage() {
                                     }
                                 }}
                                 whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm"
+                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
+                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
                                         <Images className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                                     </div>
                                     <div className="flex flex-col">
@@ -358,10 +373,10 @@ export default function LandingPage() {
                                     }
                                 }}
                                 whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm"
+                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
+                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
                                         <Users className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                                     </div>
                                     <div className="flex flex-col">
@@ -387,10 +402,10 @@ export default function LandingPage() {
                                     }
                                 }}
                                 whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm"
+                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
+                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
                                         <Zap className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                                     </div>
                                     <div className="flex flex-col">
@@ -404,18 +419,20 @@ export default function LandingPage() {
 
                     {/* Right Column - Comparison Slider & Stats */}
                     <motion.div
-                        className="relative hidden lg:block -mt-16"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        className="relative hidden lg:block mt-12"
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
-                        {/* Comparison Slider */}
-                        <div className="relative z-10 rounded-2xl shadow-2xl shadow-emerald-500/10 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md mx-auto">
+                        {/* Background Glow Effect */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-br from-teal-400/20 to-emerald-300/20 dark:from-teal-500/10 dark:to-emerald-500/10 blur-[90px] rounded-full -z-10 pointer-events-none" />
+
+                        {/* Comparison Slider - Blended Background (No Border) */}
+                        <div className="relative z-10 rounded-3xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm p-4 sm:p-5 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md mx-auto">
                             <LandingVisuals />
                         </div>
                     </motion.div>
                 </div>
-
 
             </main>
         </div>

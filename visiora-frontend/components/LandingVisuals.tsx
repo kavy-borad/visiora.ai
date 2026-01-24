@@ -8,31 +8,43 @@ import { Sparkles } from "lucide-react";
 // Standard pairs
 const col1 = [
     {
+        id: 5,
+        raw: '/shirt-set-raw.jpg',
+        ai: '/shirt-set-ai.jpg',
+        aspect: 'aspect-[2/3]'
+    },
+    {
         id: 1,
         raw: '/suit-before.jpg',
         ai: '/suit-after.jpg',
-        aspect: 'aspect-[3/4]'
+        aspect: 'aspect-[2/3]'
     },
     {
         id: 3,
         raw: '/red-top-before-v2.jpg',
         ai: '/red-top-after.jpg',
-        aspect: 'aspect-[3/4]'
+        aspect: 'aspect-[2/3]'
     }
 ];
 
 const col2 = [
     {
+        id: 6,
+        raw: '/poncho-raw.jpg',
+        ai: '/poncho-ai.jpg',
+        aspect: 'aspect-[2/3]'
+    },
+    {
         id: 2,
         raw: '/lehenga-before.jpg',
         ai: '/lehenga-after.jpg',
-        aspect: 'aspect-[3/4]'
+        aspect: 'aspect-[2/3]'
     },
     {
         id: 4,
         raw: '/plaid-before-v2.jpg',
         ai: '/plaid-after.jpg',
-        aspect: 'aspect-[3/4]'
+        aspect: 'aspect-[2/3]'
     }
 ];
 
@@ -73,9 +85,7 @@ export default function LandingVisuals() {
                 ))}
             </motion.div>
 
-            {/* Fade masks top/bottom for clear 'infinite' feel */}
-            <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent z-10" />
-            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white dark:from-gray-900 to-transparent z-10" />
+            {/* Fade masks removed for better blending with parent container */}
         </div>
     );
 }
