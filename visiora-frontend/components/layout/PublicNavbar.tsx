@@ -46,7 +46,7 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
         { id: "home", label: "Home", href: "/" },
         { id: "features", label: "Features", href: "/features" },
         { id: "solutions", label: "Solutions", href: "/solutions" },
-        { id: "pricing", label: "Pricing", href: "/pricing" },
+        // { id: "pricing", label: "Pricing", href: "/pricing" },
         { id: "results", label: "Results", href: "/results" },
         // { id: "get-started", label: "Get Started", href: "/get-started" }, // Removed from center nav
     ];
@@ -97,7 +97,7 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
                 </nav>
 
                 {/* Right Side - Premium Actions */}
-                <div className="hidden lg:flex gap-5 items-center relative z-50">
+                <div className="hidden lg:flex gap-2 items-center relative z-50">
                     {/* Theme Toggle - Minimal */}
                     <button
                         onClick={toggleTheme}
@@ -155,21 +155,27 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
                             </AnimatePresence>
                         </div>
                     ) : (
-                        <>
+                        <div className="flex items-center gap-2">
                             <Link
                                 href="/login"
-                                className="px-5 py-2 text-sm font-medium text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                className="relative px-3 py-2 text-sm font-bold text-slate-900 dark:text-white bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-full transition-all shadow-sm group overflow-hidden"
                             >
-                                Log In
+                                <span className="relative z-10">Log In</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400/10 dark:via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                             </Link>
-                            <Link
-                                href="/register"
-                                className="px-6 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group"
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                <span className="relative z-10 group-hover:text-teal-50 dark:group-hover:text-teal-900 transition-colors">Get Started</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            </Link>
-                        </>
+                                <Link
+                                    href="/register"
+                                    className="relative px-5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 text-sm font-bold rounded-full shadow-lg shadow-slate-900/20 dark:shadow-white/10 transition-colors duration-300 overflow-hidden group flex items-center"
+                                >
+                                    <span className="relative z-10">Sign Up</span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-black/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                </Link>
+                            </motion.div>
+                        </div>
                     )}
                 </div>
 
@@ -219,9 +225,10 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
                                     <Link href="/login" className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-gray-300 bg-slate-50 dark:bg-gray-800 rounded-xl">
                                         Log In
                                     </Link>
-                                    <Link href="/register" className="px-4 py-3 text-center text-sm font-bold text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl">
-                                        Get Started
+                                    <Link href="/register" className="px-4 py-3 text-center text-sm font-bold text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl shadow-md">
+                                        Sign Up
                                     </Link>
+
                                 </div>
                             )}
                         </nav>

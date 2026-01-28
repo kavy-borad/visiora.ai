@@ -217,7 +217,7 @@ export default function LandingPage() {
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl 2xl:text-7xl font-bold leading-[1.2] mb-2 sm:mb-4 tracking-tight text-slate-900 dark:text-white"
                         >
-                            Transform Products into <br className="hidden sm:block" />
+                            Elevate Products into <br className="hidden sm:block" />
 
                             <span className="block overflow-hidden relative">
                                 <AnimatePresence mode="wait">
@@ -244,7 +244,7 @@ export default function LandingPage() {
                             transition={{ duration: 0.6, delay: 0.8 }} // 0.8s total delay
                             className="text-base sm:text-lg 2xl:text-xl text-slate-500 dark:text-gray-400 leading-relaxed mb-4 sm:mb-6 max-w-md 2xl:max-w-lg mx-auto lg:mx-0"
                         >
-                            Create professional product photography instantly. No studio required. Just upload your product and let our AI generate photorealistic scenes.
+                            Generate professional product visuals instantly — no studio required. Simply upload your product and let our AI create photorealistic scenes optimized for ads, websites, and e-commerce.
                         </motion.p>
 
                         {/* 4. & 5. CTA Buttons */}
@@ -267,7 +267,8 @@ export default function LandingPage() {
                             </motion.div>
 
                             {/* Secondary CTA - Structured Surface (Not just flat white) */}
-                            <motion.div
+                            {/* Pricing Button - Temporarily Hidden */}
+                            {/* <motion.div
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.5, delay: 1.2, ease: "easeOut" }}
@@ -281,7 +282,7 @@ export default function LandingPage() {
                                     Pricing
                                     <ArrowUpRight className="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors" />
                                 </Link>
-                            </motion.div>
+                            </motion.div> */}
                         </div>
 
                         {/* 6. Trust Indicators - Staggered */}
@@ -289,7 +290,7 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 1.4 }}
-                            className="flex items-center justify-center lg:justify-start gap-4 text-sm text-slate-500 dark:text-gray-400"
+                            className="flex flex-col items-start justify-start gap-4 text-sm text-slate-500 dark:text-gray-400"
                         >
                             <motion.div
                                 initial={{ opacity: 0, y: 5 }}
@@ -297,125 +298,33 @@ export default function LandingPage() {
                                 transition={{ duration: 0.4, delay: 1.5 }}
                                 className="flex items-center gap-2"
                             >
-                                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                <span>No credit card required</span>
+                                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                <span>Start with 1 free credit</span>
                             </motion.div>
-                            <span className="text-slate-300 dark:text-gray-700">•</span>
-                            <motion.div
-                                initial={{ opacity: 0, y: 5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 1.6 }}
-                                className="flex items-center gap-2"
-                            >
-                                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                <span>14-day free trial</span>
-                            </motion.div>
+
+                            <div className="flex flex-col items-start gap-1">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 1.6 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                    <span>Upgrade anytime with our best-value plans</span>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 1.7 }}
+                                    className="pl-6"
+                                >
+                                    <span>Built for businesses of every size</span>
+                                </motion.div>
+                            </div>
                         </motion.div>
 
-                        {/* Stats - Moved to Hero */}
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={{
-                                hidden: { opacity: 0 },
-                                visible: {
-                                    opacity: 1,
-                                    transition: {
-                                        staggerChildren: 0.3,
-                                        delayChildren: 1.8
-                                    }
-                                }
-                            }}
-                            className="flex flex-wrap lg:flex-nowrap items-stretch justify-center lg:justify-start gap-3 mt-5 sm:mt-8 w-full mx-auto lg:mx-0"
-                        >
-                            {/* Stat 1 */}
-                            <motion.div
-                                variants={{
-                                    hidden: { opacity: 0, y: 20, scale: 0.95, x: 0 },
-                                    visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        x: 0,
-                                        scale: 1,
-                                        transition: {
-                                            type: "spring",
-                                            stiffness: 100,
-                                            damping: 15
-                                        }
-                                    }
-                                }}
-                                whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
-                                        <Images className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-lg font-bold text-slate-800 dark:text-gray-100 leading-none mb-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{formatNumber(imagesGenerated)}</span>
-                                        <span className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider group-hover:text-slate-600 dark:group-hover:text-gray-300 transition-colors">Visuals Generated</span>
-                                    </div>
-                                </div>
-                            </motion.div>
 
-                            {/* Stat 2 */}
-                            <motion.div
-                                variants={{
-                                    hidden: { opacity: 0, x: -20, scale: 0.95 },
-                                    visible: {
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: 1,
-                                        transition: {
-                                            type: "spring",
-                                            stiffness: 100,
-                                            damping: 15
-                                        }
-                                    }
-                                }}
-                                whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
-                                        <Users className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-lg font-bold text-slate-800 dark:text-gray-100 leading-none mb-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{formatNumber(activeUsers)}</span>
-                                        <span className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider group-hover:text-slate-600 dark:group-hover:text-gray-300 transition-colors">Happy Users</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* Stat 3 */}
-                            <motion.div
-                                variants={{
-                                    hidden: { opacity: 0, x: -20, scale: 0.95 },
-                                    visible: {
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: 1,
-                                        transition: {
-                                            type: "spring",
-                                            stiffness: 100,
-                                            damping: 15
-                                        }
-                                    }
-                                }}
-                                whileHover={{ y: -4, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                                className="relative px-5 py-3 rounded-2xl border border-transparent hover:border-teal-100/50 dark:hover:border-teal-900/30 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-150 group cursor-pointer backdrop-blur-sm flex-1 min-w-0"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-white dark:bg-gray-800 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
-                                        <Zap className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-lg font-bold text-slate-800 dark:text-gray-100 leading-none mb-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{avgGenerationTime}s</span>
-                                        <span className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider group-hover:text-slate-600 dark:group-hover:text-gray-300 transition-colors">Generation Time</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </motion.div>
                     </div>
 
                     {/* Right Column - Comparison Slider & Stats */}

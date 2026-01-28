@@ -85,7 +85,7 @@ export default function MorphLoopVisuals({ direction = "left" }: { direction?: "
 
 function MarqueeColumn({ items, duration }: { items: typeof pairs, duration: number }) {
     return (
-        <div className="relative h-[200vh] overflow-hidden flex flex-col gap-6">
+        <div className="relative h-[200vh] overflow-hidden flex flex-col gap-6 will-change-transform transform-gpu">
             <motion.div
                 className="flex flex-col gap-6"
                 animate={{ y: "-50%" }}

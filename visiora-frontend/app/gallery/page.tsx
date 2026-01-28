@@ -235,39 +235,22 @@ export default function GalleryPage() {
         }
 
         try {
-            // Fetch blob from proxy to ensure cross-device consistency
-            // This forces the browser to load the data first, preventing mobile download failures
+            // Use the proxy directly for reliable downloads on all devices (mobile/desktop)
+            // This avoids client-side fetch CORS issues and memory limits
             const proxyUrl = `/api/download?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(filename)}`;
-            const response = await fetch(proxyUrl);
 
-            if (!response.ok) throw new Error(`Download failed: ${response.statusText}`);
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-
-            // Trigger safe download
             const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            link.style.display = 'none';
+            link.href = proxyUrl;
+            link.download = filename; // Hint to browser
             document.body.appendChild(link);
             link.click();
-
-            // Cleanup
             document.body.removeChild(link);
-            setTimeout(() => window.URL.revokeObjectURL(url), 100);
 
-            console.log('✅ Download successful via Blob');
+            console.log('✅ Download initiated via Proxy Link');
         } catch (error) {
             console.error('❌ Download error:', error);
-            // Fallback to direct link if proxy fails (though unlikely to work if CORS is issue)
-            const link = document.createElement('a');
-            link.href = src;
-            link.target = '_blank';
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Fallback (unlikely to be reached for link click)
+            window.location.href = src;
         }
     };
 
