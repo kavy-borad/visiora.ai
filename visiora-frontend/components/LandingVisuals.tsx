@@ -111,36 +111,63 @@ function GridItem({ item, index }: { item: any, index: number }) {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1.2, ease: "easeInOut" }}
                 >
-                    {/* Image Container with Cover to look premium */}
-                    <div className="relative w-full h-full">
-                        <Image
-                            src={showAi ? item.ai : item.raw}
-                            alt={showAi ? "AI" : "Raw"}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        {/* Subtle Overlay to unify contrast */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60" />
-                    </div>
-
-                    {/* Minimal Badge */}
-                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-                        <div className="flex flex-col">
-                            {/* Caption could go here */}
-                        </div>
-                        {showAi ? (
-                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold bg-white/90 text-teal-700 backdrop-blur-md rounded-full shadow-sm">
-                                <Sparkles className="w-2.5 h-2.5" /> GENERATED
-                            </span>
-                        ) : (
-                            <span className="px-2.5 py-1 text-[10px] font-bold bg-black/40 text-white backdrop-blur-md rounded-full border border-white/10">
-                                ORIGINAL
-                            </span>
-                        )}
-                    </div>
+                    <Image
+                        src={showAi ? item.ai : item.raw}
+                        alt={showAi ? "AI" : "Raw"}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                 </motion.div>
             </AnimatePresence>
+
+            {/* Static Overlay to prevent flickering */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60 pointer-events-none" />
+
+            {/* Badge - Outside AnimatePresence for stability */}
+            {/* Badge - Outside AnimatePresence for stability */}
+            <div className="absolute bottom-3 right-3 z-10">
+                {/* Static Container - Fixed dimensions */}
+                <div className="relative w-[92px] h-[24px]">
+
+                    {/* Background Layer 1: ORIGINAL (Dark) - Fades out */}
+                    <div
+                        className={`absolute inset-0 rounded-full backdrop-blur-md shadow-sm border border-white/10 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-opacity
+                        ${showAi ? 'opacity-0' : 'opacity-100'}
+                        `}
+                    />
+
+                    {/* Background Layer 2: GENERATED (White) - Fades in */}
+                    <div
+                        className={`absolute inset-0 rounded-full backdrop-blur-md shadow-sm border border-white/20 bg-white/95 transition-opacity duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-opacity
+                        ${showAi ? 'opacity-100' : 'opacity-0'}
+                        `}
+                    />
+
+                    {/* Content Layer: Original */}
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]
+                        ${!showAi ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}
+                        `}
+                    >
+                        <span className="text-[9px] font-extrabold tracking-widest uppercase leading-none text-white/90">
+                            ORIGINAL
+                        </span>
+                    </div>
+
+                    {/* Content Layer: Generated */}
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center gap-1.5 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]
+                        ${showAi ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}
+                        `}
+                    >
+                        <Sparkles className="w-2.5 h-2.5 text-teal-700" />
+                        <span className="text-[9px] font-extrabold tracking-widest uppercase leading-none text-teal-700">
+                            GENERATED
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

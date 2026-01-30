@@ -136,14 +136,28 @@ export default function AddMoneyPage() {
                 credits: calculatedCredits,
             });
 
-            if (!response.success || !response.data) {
-                setError(response.error || 'Failed to create order');
+            // Handle network/wrapper level errors
+            if (!response.success) {
+                setError(response.error || 'Failed to connect to server');
                 setIsProcessing(false);
                 return;
             }
 
-            const orderData = response.data;
-            const razorpayOrderId = orderData.razorpayOrderId || orderData.orderId || orderData.order_id || orderData.id;
+            // Handle backend logic errors (success: false in body)
+            // walletApi.addMoney returns { success: true, data: response.data } where response.data is the body
+            const responseBody = response.data;
+
+            if (!responseBody || !responseBody.success || !responseBody.data) {
+                setError(responseBody?.message || 'Failed to create payment order');
+                setIsProcessing(false);
+                return;
+            }
+
+            const orderData = responseBody.data;
+            // Map the order ID carefully. 
+            // Ideally, Razorpay expects an order ID starting with 'order_'.
+            // We'll use razorpayOrderId if available, otherwise fallback to orderId or id.
+            const razorpayOrderId = orderData.razorpayOrderId || orderData.orderId || orderData.id;
 
             if (paymentMethod === 'razorpay') {
                 // Load Razorpay script if needed
@@ -153,7 +167,7 @@ export default function AddMoneyPage() {
                     script.async = true;
                     await new Promise<void>((resolve, reject) => {
                         script.onload = () => resolve();
-                        script.onerror = () => reject(new Error('Failed to load Razorpay'));
+                        script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
                         document.body.appendChild(script);
                     });
                 }
@@ -164,11 +178,11 @@ export default function AddMoneyPage() {
                 // Open Razorpay checkout
                 const razorpayOptions = {
                     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
-                    amount: numAmount * 100,
-                    currency: currency,
+                    amount: orderData.amount ? orderData.amount * 100 : numAmount * 100, // Amount is in paise
+                    currency: orderData.currency || currency,
                     name: 'Visiora',
                     description: `${calculatedCredits} Credits`,
-                    order_id: razorpayOrderId || '',
+                    order_id: razorpayOrderId, // Pass the ID received from backend
                     handler: async function (razorpayResponse: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
                         try {
                             const verifyResult = await walletApi.verifyPayment({
@@ -210,12 +224,11 @@ export default function AddMoneyPage() {
                 };
 
                 const razorpay = new window.Razorpay(razorpayOptions);
-
                 razorpay.on('payment.failed', function (response: any) {
+                    console.error('Razorpay payment failed:', response.error);
                     setError(response.error?.description || 'Payment failed. Please try again.');
                     setIsProcessing(false);
                 });
-
                 razorpay.open();
             } else {
                 // Bank Transfer flow - Show instructions or redirect
@@ -248,12 +261,12 @@ export default function AddMoneyPage() {
                 />
 
                 {/* Content Area - Fixed Layout */}
-                <div className="flex-1 overflow-hidden p-4 sm:p-6">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="h-full flex flex-col"
+                        className="min-h-full flex flex-col"
                     >
                         {/* Page Header */}
                         <div className="flex items-center justify-between mb-6 flex-shrink-0">

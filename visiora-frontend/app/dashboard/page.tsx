@@ -170,7 +170,14 @@ export default function DashboardPage() {
             }
 
             // Explicitly log success of required endpoints
-            if (overviewRes.success) console.log('✅ /dashboard/overview called');
+            if (overviewRes.success && overviewRes.data && overviewRes.data.stats) {
+                console.log('✅ /dashboard/overview called', overviewRes.data.stats);
+                // Merge overview stats into current stats to ensure we have the latest "favoriteStyle"
+                setStats(prev => {
+                    const newStats = overviewRes.data!.stats;
+                    return prev ? { ...prev, ...newStats } : newStats;
+                });
+            }
 
             if (dailyGenRes.success) {
                 console.log('✅ /dashboard/charts/daily-generation called');
@@ -235,6 +242,7 @@ export default function DashboardPage() {
     // Determine favorite style from analytics or stats
     let favStyle = "N/A";
     let favStyleUsage = 0;
+    let styleFound = false;
 
     if (styleAnalytics) {
         // Handle array response: [{style: 'Realistic', count: 10}, ...]
@@ -242,15 +250,20 @@ export default function DashboardPage() {
             favStyle = styleAnalytics[0].style || styleAnalytics[0].name || "N/A";
             // Calculate usage percentage if total is available, otherwise show count
             favStyleUsage = styleAnalytics[0].percentage || styleAnalytics[0].count || 0;
+            styleFound = true;
         }
         // Handle object response: { topStyle: 'Realistic', usage: 50 }
         else if (styleAnalytics.topStyle) {
             favStyle = styleAnalytics.topStyle;
             favStyleUsage = styleAnalytics.usage || 0;
+            styleFound = true;
         }
-    } else if (stats) {
+    }
+
+    // Fallback if analytics didn't find anything but we have it in stats (from overview API)
+    if (!styleFound && stats && stats.favoriteStyle && stats.favoriteStyle !== 'None') {
         favStyle = stats.favoriteStyle;
-        favStyleUsage = stats.favoriteStyleUsage;
+        favStyleUsage = stats.favoriteStyleUsage || 0;
     }
 
     // Determine top generation type
@@ -288,7 +301,7 @@ export default function DashboardPage() {
         {
             label: "Free Credits",
             value: stats.freeCredits.toString(),
-            subValue: `/ ${stats.maxFreeCredits}`,
+            // subValue removed as requested by user - only show dynamic credit count
             icon: Zap,
             progress: (stats.freeCredits / stats.maxFreeCredits) * 100,
             color: "bg-blue-500"
@@ -389,8 +402,8 @@ export default function DashboardPage() {
                                         {card.icon && <card.icon className="w-4 h-4 text-slate-400" />}
                                     </div>
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-xl font-bold text-slate-800 dark:text-white">{card.value}</span>
-                                        {card.subValue && <span className="text-xs text-slate-500 dark:text-gray-400">{card.subValue}</span>}
+                                        <span className={`text-xl font-bold text-slate-800 dark:text-white ${card.label === 'Favorite Style' ? 'capitalize' : ''}`}>{card.value}</span>
+
                                     </div>
                                     {card.subText && <span className="text-[10px] text-slate-500 dark:text-gray-400">{card.subText}</span>}
                                     {card.progress && (
@@ -483,9 +496,9 @@ export default function DashboardPage() {
                                                                     }}
                                                                 >
                                                                     <div className="w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-pointer transition-all group-hover:scale-150 group-hover:shadow-md" />
-                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[10px] font-medium px-2 py-1.5 rounded shadow-lg whitespace-nowrap">
-                                                                        <div className="font-semibold">{dayLabel}</div>
-                                                                        <div>Generated Images: {p}</div>
+                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 bg-slate-800 text-white text-[9px] font-medium px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                                                                        <div className="font-semibold mb-0.5">{dayLabel}</div>
+                                                                        <div>Images: {p}</div>
                                                                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                                     </div>
                                                                 </div>

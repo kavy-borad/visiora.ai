@@ -529,6 +529,57 @@ export default function WalletPage() {
         { id: "wallet", label: "Wallet", icon: Wallet, href: "/wallet", active: true },
     ];
 
+    const renderPackagesList = () => (
+        <div className="flex flex-col gap-3">
+            {isLoadingPackages ? (
+                <div className="p-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                </div>
+            ) : packages.length > 0 ? (
+                packages.map((pkg) => (
+                    <Link
+                        key={pkg.id}
+                        href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
+                        className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
+                            ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
+                            : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'
+                            }`}
+                    >
+                        {pkg.isPopular && (
+                            <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
+                                Popular
+                            </div>
+                        )}
+
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{pkg.totalCredits}</span>
+                                    <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Credits</span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{pkg.name}</p>
+                            </div>
+                            <span className="text-lg font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                                {formatCurrency(pkg.amount, pkg.currency)}
+                            </span>
+                        </div>
+
+                        {pkg.bonusCredits > 0 && (
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md inline-flex">
+                                <Plus className="w-3 h-3" />
+                                {pkg.bonusCredits} Bonus Credits
+                            </div>
+                        )}
+                    </Link>
+                ))
+            ) : (
+                <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <p className="text-slate-500 text-sm">No packages available</p>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
@@ -576,20 +627,20 @@ export default function WalletPage() {
 
                         {/* Content - Fixed Layout with flex sections */}
                         {/* Main Split Layout */}
-                        <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden scroll-smooth">
+                        <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 lg:overflow-hidden overflow-visible scroll-smooth h-auto lg:h-full">
 
                             {/* LEFT COLUMN - Balance & Transactions */}
-                            <div className="flex-1 flex flex-col gap-5 min-h-0 overflow-hidden">
+                            <div className="w-full flex flex-col gap-5 min-h-0 lg:overflow-hidden overflow-visible lg:flex-1 h-auto lg:h-full">
 
                                 {/* Balance Card */}
                                 <div className="shrink-0 rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden p-6 transition-all hover:shadow-md">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                        <div className="space-y-1">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div className="space-y-1 w-full sm:w-auto">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Current Balance</span>
                                                 <Info className="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-teal-500 transition-colors" />
                                             </div>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 flex-wrap">
                                                 <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{formatCurrency(balance)}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[10px] font-bold">{currency}</span>
@@ -597,7 +648,7 @@ export default function WalletPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                                        <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                                             <Link
                                                 href="/wallet/add-money"
                                                 className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
@@ -612,8 +663,17 @@ export default function WalletPage() {
                                     </div>
                                 </div>
 
+                                {/* Mobile Packages Section (Injected between Balance and History) */}
+                                <div className="lg:hidden flex flex-col gap-3">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                        <h3 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-wider">Buy Credits</h3>
+                                    </div>
+                                    {renderPackagesList()}
+                                </div>
+
                                 {/* Transaction History Card */}
-                                <div className="flex-1 flex flex-col rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden min-h-[300px]">
+                                <div className="flex flex-col rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm lg:overflow-hidden overflow-visible min-h-[300px] lg:flex-1 h-auto lg:h-full">
                                     {/* Header with Filters */}
                                     <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 shrink-0">
                                         <div className="flex items-center justify-between mb-3">
@@ -772,7 +832,7 @@ export default function WalletPage() {
                                             <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
                                         </div>
                                     ) : transactions.length > 0 ? (
-                                        <div className="flex-1 overflow-y-auto">
+                                        <div className="lg:flex-1 lg:overflow-y-auto h-auto">
                                             {transactions.map((tx) => (
                                                 <div
                                                     key={tx.id}
@@ -844,61 +904,14 @@ export default function WalletPage() {
                                 </div>
                             </div>
 
-                            {/* RIGHT COLUMN - Fixed Sidebar */}
-                            <div className="w-full lg:w-[320px] 2xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto pb-4 h-full">
+                            {/* RIGHT COLUMN - Fixed Sidebar (Desktop Only) */}
+                            <div className="hidden lg:flex w-full lg:w-[320px] 2xl:w-[360px] shrink-0 flex-col gap-4 overflow-y-auto pb-4 h-full">
                                 <div className="flex items-center gap-2 px-1">
                                     <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                                     <h3 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-wider">Buy Credits</h3>
                                 </div>
 
-                                <div className="flex flex-col gap-3">
-                                    {isLoadingPackages ? (
-                                        <div className="p-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
-                                            <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
-                                        </div>
-                                    ) : packages.length > 0 ? (
-                                        packages.map((pkg) => (
-                                            <Link
-                                                key={pkg.id}
-                                                href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
-                                                className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
-                                                    ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
-                                                    : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'
-                                                    }`}
-                                            >
-                                                {pkg.isPopular && (
-                                                    <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
-                                                        Popular
-                                                    </div>
-                                                )}
-
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div>
-                                                        <div className="flex items-baseline gap-1.5">
-                                                            <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{pkg.totalCredits}</span>
-                                                            <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Credits</span>
-                                                        </div>
-                                                        <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{pkg.name}</p>
-                                                    </div>
-                                                    <span className="text-lg font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
-                                                        {formatCurrency(pkg.amount, pkg.currency)}
-                                                    </span>
-                                                </div>
-
-                                                {pkg.bonusCredits > 0 && (
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md inline-flex">
-                                                        <Plus className="w-3 h-3" />
-                                                        {pkg.bonusCredits} Bonus Credits
-                                                    </div>
-                                                )}
-                                            </Link>
-                                        ))
-                                    ) : (
-                                        <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
-                                            <p className="text-slate-500 text-sm">No packages available</p>
-                                        </div>
-                                    )}
-                                </div>
+                                {renderPackagesList()}
                             </div>
                         </div>
                     </PageTransition>
@@ -927,45 +940,45 @@ export default function WalletPage() {
                                 <div className="p-5">
                                     <div className="flex flex-col items-center mb-6">
                                         <div className="size-14 bg-slate-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-3">
-                                            {getTransactionIcon(selectedTransaction.type)}
+                                            {getTransactionIcon(selectedTransaction?.type || 'card')}
                                         </div>
-                                        <h2 className={`text-2xl font-bold ${selectedTransaction.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
-                                            {selectedTransaction.type === 'debit' ? '-' : '+'}{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                                        <h2 className={`text-2xl font-bold ${selectedTransaction?.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                                            {selectedTransaction?.type === 'debit' ? '-' : '+'}{formatCurrency(selectedTransaction?.amount || 0, selectedTransaction?.currency)}
                                         </h2>
-                                        <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-1">{selectedTransaction.description}</p>
-                                        <div className={`mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedTransaction.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : selectedTransaction.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                                            {selectedTransaction.status.toUpperCase()}
+                                        <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-1">{selectedTransaction?.description}</p>
+                                        <div className={`mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedTransaction?.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : selectedTransaction?.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                            {selectedTransaction?.status?.toUpperCase()}
                                         </div>
                                     </div>
 
                                     <div className="space-y-3 bg-slate-50 dark:bg-gray-700/30 rounded-xl p-4 border border-slate-100 dark:border-gray-700/50">
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-slate-500 dark:text-gray-400">Date</span>
-                                            <span className="font-semibold text-slate-900 dark:text-white">{new Date(selectedTransaction.createdAt).toLocaleString()}</span>
+                                            <span className="font-semibold text-slate-900 dark:text-white">{selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleString() : '-'}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-slate-500 dark:text-gray-400">Transaction ID</span>
-                                            <span className="font-mono font-medium text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction.id}</span>
+                                            <span className="font-mono font-medium text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction?.id}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-slate-500 dark:text-gray-400">Type</span>
-                                            <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.type}</span>
+                                            <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction?.type}</span>
                                         </div>
-                                        {selectedTransaction.metadata?.paymentMethod && (
+                                        {selectedTransaction?.metadata?.paymentMethod && (
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-500 dark:text-gray-400">Gateway</span>
                                                 <span className="capitalize font-semibold text-slate-900 dark:text-white">{selectedTransaction.metadata.paymentMethod}</span>
                                             </div>
                                         )}
                                         {/* Order ID - from metadata */}
-                                        {selectedTransaction.metadata?.orderId && (
+                                        {selectedTransaction?.metadata?.orderId && (
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-500 dark:text-gray-400">Order ID</span>
                                                 <span className="font-mono text-slate-700 dark:text-gray-300 text-xs">{selectedTransaction.metadata.orderId}</span>
                                             </div>
                                         )}
                                         {/* Generation ID - from metadata */}
-                                        {selectedTransaction.metadata?.generationId && (
+                                        {selectedTransaction?.metadata?.generationId && (
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-500 dark:text-gray-400">Generation ID</span>
                                                 <span className="font-mono text-slate-700 dark:text-gray-300 text-xs truncate max-w-[180px]" title={selectedTransaction.metadata.generationId}>
@@ -974,7 +987,7 @@ export default function WalletPage() {
                                             </div>
                                         )}
                                         {/* Promo Code - from metadata */}
-                                        {selectedTransaction.metadata?.promoCode && (
+                                        {selectedTransaction?.metadata?.promoCode && (
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-500 dark:text-gray-400">Promo Code</span>
                                                 <span className="font-mono text-teal-600 dark:text-teal-400 text-xs font-bold bg-teal-50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded">

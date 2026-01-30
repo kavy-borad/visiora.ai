@@ -89,11 +89,7 @@ export default function GenerateImagesPage() {
 
         // Small delay to allow exit animation to play
         setTimeout(() => {
-            if (selectedType === 'batch_image') {
-                router.push('/generate/ecommerce-options');
-            } else {
-                router.push('/generate/upload');
-            }
+            router.push('/generate/upload');
         }, 400); // 400ms matches typical transition duration
     };
 

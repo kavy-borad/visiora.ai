@@ -21,8 +21,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { generateApi, GenerateFormData, Category, ModelPreset, BundleOptionsPayload } from "@/lib/generate";
+import { generateApi, GenerateFormData, Category, ModelPreset, BundleOptionsPayload, UserCredits } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
+import { walletApi } from "@/lib/wallet";
 import { Sidebar, Header } from "@/components/layout";
 import AILoader from "@/components/AILoader";
 import { navigationState } from "@/lib/navigationState";
@@ -54,7 +55,7 @@ export default function DetailsPage() {
     const [modelStyle, setModelStyle] = useState("professional");
 
     // Output settings
-    const [imageCount, setImageCount] = useState(4);
+    const [imageCount, setImageCount] = useState(1);
     const [resolution, setResolution] = useState("1024x1024");
     const [format, setFormat] = useState("png");
     const [background, setBackground] = useState("studio");
@@ -81,6 +82,9 @@ export default function DetailsPage() {
     // Model presets from API
     const [modelPresets, setModelPresets] = useState<ModelPreset[]>([]);
     const [modelPresetsLoading, setModelPresetsLoading] = useState(false);
+
+    // User Credits
+    const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
 
     // Filter states for model presets
     const [genderFilter, setGenderFilter] = useState<'female' | 'male' | 'unisex' | 'all'>('all');
@@ -114,10 +118,33 @@ export default function DetailsPage() {
     // Load ecommerce bundle options from localStorage (for batch_image)
     const [savedBundleOptions, setSavedBundleOptions] = useState<any>(null);
 
+    // Helper to get image count from views
+    const getImageCountFromViews = (views: string): number => {
+        switch (views) {
+            case 'standard_4':
+            case 'views_standard': return 4;
+
+            case 'basic_2':
+            case 'views_basic': return 2;
+
+            case 'premium_6':
+            case 'views_extended': return 6;
+
+            case 'complete_8':
+            case 'views_360': return 8;
+
+            default: return 4; // Default to standard
+        }
+    };
+
     useEffect(() => {
         const savedType = localStorage.getItem("generateType");
         if (savedType === "single_image" || savedType === "batch_image") {
             setGenerationType(savedType);
+            // Default to 1 image if single_image is selected
+            if (savedType === 'single_image') {
+                setImageCount(1);
+            }
         }
 
         // Load uploaded image for loader background
@@ -138,6 +165,13 @@ export default function DetailsPage() {
             try {
                 const ecommerceOptions = JSON.parse(ecommerceOptionsStr);
                 setSavedBundleOptions(ecommerceOptions);
+
+                // Update image count based on saved options if in batch mode
+                if (savedType === 'batch_image' && ecommerceOptions.productViews) {
+                    setImageCount(getImageCountFromViews(ecommerceOptions.productViews));
+                } else if (savedType === 'single_image') {
+                    setImageCount(1);
+                }
             } catch (e) {
                 console.warn('Failed to parse ecommerce options:', e);
             }
@@ -155,8 +189,24 @@ export default function DetailsPage() {
         }
 
         fetchCategories();
-
+        fetchUserCredits();
     }, []);
+
+    const fetchUserCredits = async () => {
+        try {
+            const response = await walletApi.getUserCredits();
+            if (response.success && response.data) {
+                // Ensure the shape matches UserCredits interface
+                setUserCredits({
+                    freeCredits: response.data.freeCredits,
+                    maxFreeCredits: response.data.maxFreeCredits,
+                    balance: response.data.balance
+                });
+            }
+        } catch (error) {
+            console.warn('Failed to fetch credits');
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -279,16 +329,6 @@ export default function DetailsPage() {
             let bundleOptionsPayload: BundleOptionsPayload | undefined = undefined;
             if (generationType === 'batch_image' && savedBundleOptions) {
                 // Derive image count from product views
-                const getImageCountFromViews = (views: string): number => {
-                    switch (views) {
-                        case 'views_standard': return 4;
-                        case 'views_basic': return 2;
-                        case 'views_extended': return 6;
-                        case 'views_360': return 8;
-                        default: return 4; // Default to standard
-                    }
-                };
-
                 bundleOptionsPayload = {
                     product_views: savedBundleOptions.productViews || 'views_standard',
                     background: savedBundleOptions.backgroundType || 'bg_white',
@@ -301,6 +341,16 @@ export default function DetailsPage() {
                     },
                     image_count: getImageCountFromViews(savedBundleOptions.productViews || 'views_standard'),
                 };
+            }
+
+            // Check if user has enough credits
+            const totalCredits = (userCredits?.freeCredits || 0) + (userCredits?.balance || 0);
+            const requiredCredits = bundleOptionsPayload ? bundleOptionsPayload.image_count : imageCount;
+
+            if (totalCredits < requiredCredits) {
+                setError(`Insufficient credits. You need ${requiredCredits} credits but have ${totalCredits}.`);
+                setIsSubmitting(false);
+                return;
             }
 
             // Convert uploaded image URL to File object if available
@@ -515,6 +565,9 @@ export default function DetailsPage() {
                                                                             key={cat.id}
                                                                             onClick={() => {
                                                                                 setBusinessCategory(cat.id);
+                                                                                if (cat.recommended_model) {
+                                                                                    setModelId(cat.recommended_model);
+                                                                                }
                                                                                 setActiveDropdown(null);
                                                                             }}
                                                                             className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group

@@ -126,7 +126,7 @@ export default function RegisterPage() {
         <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row items-stretch bg-white dark:bg-slate-900">
 
             {/* 1. Left Side - Compact Form with Tabs (Swapped) */}
-            <div className="order-2 lg:order-1 flex-1 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-8 relative overflow-y-auto lg:overflow-visible">
+            <div className="order-2 lg:order-1 flex-1 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-8 lg:pt-24 relative overflow-y-auto lg:overflow-visible">
 
                 {/* Mobile Header: Branding & Back Button (Static Flow) */}
                 <div className="w-full flex items-center justify-between mb-6 lg:hidden shrink-0">
@@ -154,9 +154,16 @@ export default function RegisterPage() {
                 <div className="w-full max-w-[380px] flex flex-col gap-5">
 
                     {/* Header */}
-                    <div className="text-center">
+                    <div className="text-center min-h-[50px] flex flex-col justify-center">
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create Account</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Start your creative journey with Visiora.</p>
+                        {(error || success) ? (
+                            <div className="animate-in fade-in text-xs font-medium mt-1 p-1">
+                                {error && <span className="text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">{error}</span>}
+                                {success && <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">{success}</span>}
+                            </div>
+                        ) : (
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Start your creative journey with Visiora.</p>
+                        )}
                     </div>
 
                     {/* Tab Switcher (Sign In | Sign Up) */}
@@ -169,23 +176,7 @@ export default function RegisterPage() {
                         </div>
                     </div>
 
-                    {/* Error/Success Messages - Fixed Height Reserve */}
-                    {(error || success) && (
-                        <div className="w-full animate-in fade-in slide-in-from-top-2">
-                            {error && (
-                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-red-900/20 border border-red-800/50 text-red-400" : "bg-red-50 border border-red-100 text-red-600"}`}>
-                                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                                    <span>{error}</span>
-                                </div>
-                            )}
-                            {success && (
-                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-green-900/20 border border-green-800/50 text-green-400" : "bg-green-50 border border-green-100 text-green-600"}`}>
-                                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-                                    <span>{success}</span>
-                                </div>
-                            )}
-                        </div>
-                    )}
+
 
                     {/* Form - Compact Spacing */}
                     <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
