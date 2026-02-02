@@ -417,12 +417,12 @@ export default function GalleryPage() {
     };
 
     return (
-        <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="gallery" />
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
@@ -432,7 +432,7 @@ export default function GalleryPage() {
                 />
 
                 {/* Fixed Gallery Content */}
-                <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
+                <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
                     <div className="h-full flex flex-col gap-3">
                         {/* Page Heading & Controls */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 shrink-0">

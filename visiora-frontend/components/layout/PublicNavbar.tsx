@@ -66,9 +66,9 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
                 <Link href="/?view=landing" className="flex items-center gap-2 group relative z-50">
                     <div className="relative flex items-center justify-center size-9">
                         <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-lg opacity-40 group-hover:opacity-100 transition-opacity duration-500" />
-                        <img src="/logo.png" alt="Visiora Logo" className="h-8 w-auto relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+                        <img src="/logo.png" alt="GenStudio Logo" className="h-8 w-auto relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    <span className="text-slate-900 dark:text-white text-lg font-bold tracking-tight">Visiora</span>
+                    <span className="text-slate-900 dark:text-white text-lg font-bold tracking-tight">GenStudio</span>
                 </Link>
 
                 {/* Navigation - Clean, Airy, Minimal Hover */}

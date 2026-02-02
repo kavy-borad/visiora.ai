@@ -431,7 +431,7 @@ export default function DetailsPage() {
                 text="Generating your images..."
             />
 
-            <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
+            <div className="h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
                 {/* Reusable Sidebar */}
                 <Sidebar activeNav="generate" />
 
@@ -502,7 +502,7 @@ export default function DetailsPage() {
                                 {/* Form Content - 2 Column Layout */}
                                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 pb-2">
                                     {/* Left Column - Configuration & Inputs */}
-                                    <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar md:pr-1">
+                                    <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar md:pr-1 pb-10">
 
                                         {/* Image Type / Context Card */}
                                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
@@ -790,7 +790,8 @@ export default function DetailsPage() {
                                         </div>
 
                                         {/* Model Grid or Empty State */}
-                                        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 overflow-y-auto custom-scrollbar">
+                                        {/* Model Grid or Empty State */}
+                                        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 overflow-y-auto custom-scrollbar pb-10">
                                             {(!displayCategories.find(c => c.id === businessCategory)?.show_model && displayCategories.find(c => c.id === businessCategory)) ? (
                                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
                                                     <div className="w-16 h-16 bg-slate-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">

@@ -94,13 +94,13 @@ export default function GenerateImagesPage() {
     };
 
     return (
-        <div className="h-full flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
-            <div className="flex flex-1 h-full overflow-x-hidden lg:overflow-hidden">
+        <div className="h-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
+            <div className="flex flex-1 h-full overflow-hidden">
                 {/* Reusable Sidebar */}
                 <Sidebar activeNav="generate" />
 
                 {/* Main Content Area */}
-                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-x-hidden transition-colors duration-300">
+                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[

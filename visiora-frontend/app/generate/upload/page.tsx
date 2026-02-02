@@ -179,7 +179,7 @@ export default function UploadPage() {
     };
 
     return (
-        <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
+        <div className="h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="generate" />
 

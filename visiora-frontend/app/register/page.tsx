@@ -328,8 +328,8 @@ export default function RegisterPage() {
             </div>
 
             {/* 2. Right Side - Visuals (Swapped) */}
-            <div className="order-1 lg:order-2 block w-full lg:w-[55%] h-[35%] lg:h-full p-2 lg:p-4 shrink-0">
-                <div className="w-full h-full rounded-2xl lg:rounded-[2rem] overflow-hidden relative shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="order-1 lg:order-2 block w-full lg:w-[55%] h-[35%] lg:h-full shrink-0">
+                <div className="w-full h-full overflow-hidden relative">
                     <MorphLoopVisuals direction="right" />
                 </div>
             </div>

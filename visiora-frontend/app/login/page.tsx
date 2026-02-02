@@ -103,8 +103,8 @@ export default function LoginPage() {
         <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row items-stretch bg-white dark:bg-slate-900">
 
             {/* 1. Left Side - Visuals (Consistent with Register Page) */}
-            <div className="block w-full lg:w-[55%] h-[35%] lg:h-full p-2 lg:p-4 shrink-0">
-                <div className="w-full h-full rounded-2xl lg:rounded-[2rem] overflow-hidden relative shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="block w-full lg:w-[55%] h-[35%] lg:h-full shrink-0">
+                <div className="w-full h-full overflow-hidden relative">
                     <MorphLoopVisuals />
                 </div>
             </div>

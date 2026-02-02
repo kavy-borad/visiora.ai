@@ -242,7 +242,7 @@ export default function AddMoneyPage() {
     };
 
     return (
-        <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Sidebar */}
             <Sidebar activeNav="wallet" />
 

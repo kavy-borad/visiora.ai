@@ -42,7 +42,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             {/* Logo Section */}
             <div className={`h-16 flex items-center shrink-0 transition-all duration-300 ${isOpen ? 'px-6' : 'px-0 justify-center'}`}>
                 <Link href="/?view=landing" className="flex items-center gap-2.5 overflow-hidden">
-                    <img src="/logo.png" alt="Visiora Logo" className="h-10 w-auto shrink-0" />
+                    <img src="/logo.png" alt="GenStudio Logo" className="h-10 w-auto shrink-0" />
                     <motion.div
                         className="flex flex-col whitespace-nowrap"
                         initial={false}
@@ -50,7 +50,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
                         transition={{ duration: 0.2 }}
                     >
                         {isOpen && (
-                            <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none ml-1">Visiora</h1>
+                            <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none ml-1">GenStudio</h1>
                         )}
                     </motion.div>
                 </Link>

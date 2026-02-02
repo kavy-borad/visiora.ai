@@ -364,7 +364,7 @@ export default function DashboardPage() {
     const userFreeCredits = stats?.freeCredits ?? userProfile?.freeCredits ?? 0;
 
     return (
-        <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="dashboard" />
 
@@ -380,7 +380,7 @@ export default function DashboardPage() {
                     balance={userBalance}
                 />
 
-                {/* Content - Scrollable on mobile/tablet, fixed on desktop */}
+                {/* Content - Fixed on desktop to prevent scroll, scrollable on mobile */}
                 <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
                     <PageTransition className="flex flex-col gap-3 sm:gap-4 lg:h-full">
 
@@ -415,10 +415,10 @@ export default function DashboardPage() {
                             ))}
                         </div>
 
-                        {/* Charts Row */}
+                        {/* Charts Row - Expands to fill space */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:flex-1 lg:min-h-0">
-                            {/* Area Chart - Fixed Y-axis scale 0-100 */}
-                            <div className="opacity-0 animate-fade-in bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-auto hover:shadow-md transition-shadow duration-300">
+                            {/* Area Chart - Fills height */}
+                            <div className="opacity-0 animate-fade-in bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-full hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center justify-between mb-3 shrink-0">
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Image Generation</h3>
                                     <select className="text-[10px] border border-slate-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5 outline-none focus:border-teal-500">
@@ -519,8 +519,8 @@ export default function DashboardPage() {
                                 </div>
                             </div>
 
-                            {/* Bar Chart - Fixed Y-axis scale 0-100 */}
-                            <div className="opacity-0 animate-fade-in-delay bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-auto hover:shadow-md transition-shadow duration-300">
+                            {/* Bar Chart - Fills height */}
+                            <div className="opacity-0 animate-fade-in-delay bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-full hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center justify-between mb-3 shrink-0">
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Spending</h3>
                                     <div className="flex items-center gap-3 text-[9px]">

@@ -14,8 +14,8 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-    // Default to unpinned (collapsed) on mount for cleaner look
-    const [isPinned, setIsPinned] = useState(false);
+    // Default to pinned (expanded) on mount
+    const [isPinned, setIsPinned] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
 
     // Auto-collapse on mobile/tablet check could go here if needed

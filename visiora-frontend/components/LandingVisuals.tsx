@@ -8,6 +8,12 @@ import { Sparkles } from "lucide-react";
 // Standard pairs
 const col1 = [
     {
+        id: 7,
+        raw: '/raw_bottle.png',
+        ai: '/ai_bottle.jpg',
+        aspect: 'aspect-[2/3]'
+    },
+    {
         id: 5,
         raw: '/shirt-set-raw.jpg',
         ai: '/shirt-set-ai.jpg',
@@ -28,6 +34,12 @@ const col1 = [
 ];
 
 const col2 = [
+    {
+        id: 8,
+        raw: '/raw_bag.png',
+        ai: '/ai_bag.jpg',
+        aspect: 'aspect-[2/3]'
+    },
     {
         id: 3,
         raw: '/red-top-before-v2.jpg',

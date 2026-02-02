@@ -141,7 +141,7 @@ export default function CreativeBuilderLayout({
 
     return (
         <CreativeBuilderContext.Provider value={contextValue}>
-            <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300">
+            <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300">
                 <Sidebar activeNav="creative-builder" />
                 <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                     <Header

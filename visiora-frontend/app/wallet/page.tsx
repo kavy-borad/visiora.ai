@@ -581,12 +581,12 @@ export default function WalletPage() {
     );
 
     return (
-        <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="wallet" />
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
@@ -599,7 +599,7 @@ export default function WalletPage() {
                 />
 
                 {/* Main Content Area - Scrollable on mobile */}
-                <div className="flex-1 flex flex-col overflow-y-auto lg:overflow-hidden p-4 sm:p-6">
+                <div className="flex-1 flex flex-col overflow-y-auto p-4 sm:p-6">
                     <PageTransition className="flex flex-col min-h-full">
                         {/* Page Header */}
                         <div className="shrink-0 mb-3">

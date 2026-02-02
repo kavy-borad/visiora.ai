@@ -200,7 +200,7 @@ export default function GoalsPage() {
             </div>
 
             {/* Fixed Footer Buttons - Bottom Corners */}
-            <div className="fixed bottom-0 left-6 right-0 z-40 px-8 py-2 flex items-center justify-between pointer-events-none">
+            <div className="fixed bottom-0 left-4 lg:left-72 right-0 z-40 px-8 py-2 flex items-center justify-between pointer-events-none">
                 <button
                     onClick={handleGoBack}
                     className="pointer-events-auto py-3 px-8 flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-slate-900 dark:hover:text-white transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"

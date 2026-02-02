@@ -1240,10 +1240,10 @@ export default function SettingsPage() {
     );
 
     return (
-        <div className="min-h-screen flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
+        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
             <Sidebar activeNav="settings" />
 
-            <main className="flex-1 flex flex-col min-w-0 min-h-screen lg:h-full lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
                 <Header
                     breadcrumbs={[
                         { label: "Home", href: "/?view=landing" },
@@ -1254,8 +1254,8 @@ export default function SettingsPage() {
                     disableWalletFetch={true}
                 />
 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                    <PageTransition className="w-full max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
+                <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                    <PageTransition className="max-w-5xl w-full space-y-4 pb-10">
 
                         {/* Page Title & Intro */}
                         <div>

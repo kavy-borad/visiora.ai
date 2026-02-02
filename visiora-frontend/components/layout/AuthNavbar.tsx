@@ -22,9 +22,9 @@ export default function AuthNavbar({
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-14 h-14 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="Visiora Logo" className="h-16 w-auto" />
+                    <img src="/logo.png" alt="GenStudio Logo" className="h-10 w-auto" />
                     <h2 className={`text-base sm:text-lg font-bold tracking-tight transition-colors duration-300 ${isDarkMode ? "text-white" : "text-slate-800"
-                        }`}>Visiora</h2>
+                        }`}>GenStudio</h2>
                 </Link>
 
                 {/* Right Side */}
