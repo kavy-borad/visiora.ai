@@ -449,8 +449,8 @@ export default function DetailsPage() {
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
                         {/* Content - Scrollable on mobile, Fixed on Desktop */}
-                        <div className="flex-1 p-4 sm:p-5 overflow-y-auto md:overflow-hidden flex flex-col">
-                            <div className="flex flex-col gap-2 min-h-full md:min-h-0 md:flex-1">
+                        <div className="flex-1 p-4 sm:p-5 overflow-y-auto lg:overflow-hidden flex flex-col">
+                            <div className="flex flex-col gap-2 min-h-full lg:min-h-0 lg:flex-1">
                                 {/* Page Header */}
                                 <div className="mb-2 shrink-0">
                                     <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">Generate Images</h1>
@@ -502,7 +502,7 @@ export default function DetailsPage() {
                                 {/* Form Content - 2 Column Layout */}
                                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 pb-2">
                                     {/* Left Column - Configuration & Inputs */}
-                                    <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar md:pr-1 pb-10">
+                                    <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 lg:overflow-y-auto custom-scrollbar lg:pr-1 pb-10">
 
                                         {/* Image Type / Context Card */}
                                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
@@ -791,7 +791,7 @@ export default function DetailsPage() {
 
                                         {/* Model Grid or Empty State */}
                                         {/* Model Grid or Empty State */}
-                                        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 overflow-y-auto custom-scrollbar pb-10">
+                                        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 lg:overflow-y-auto custom-scrollbar pb-10">
                                             {(!displayCategories.find(c => c.id === businessCategory)?.show_model && displayCategories.find(c => c.id === businessCategory)) ? (
                                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
                                                     <div className="w-16 h-16 bg-slate-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">

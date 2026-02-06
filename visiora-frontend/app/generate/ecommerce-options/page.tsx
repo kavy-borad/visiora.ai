@@ -137,9 +137,9 @@ export default function EcommerceOptionsPage() {
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
-                    {/* Content - No Scroll */}
-                    <div className="flex-1 p-4 sm:p-5 overflow-hidden flex flex-col">
-                        <div className="flex flex-col gap-2 h-full">
+                    {/* Content - Scrollable on mobile, Fixed on Desktop */}
+                    <div className="flex-1 p-4 sm:p-5 overflow-y-auto lg:overflow-hidden flex flex-col">
+                        <div className="flex flex-col gap-2 min-h-full lg:min-h-0 lg:h-full">
                             {/* Page Header */}
                             <div className="mb-2 shrink-0">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">Generate Images</h1>
@@ -183,7 +183,7 @@ export default function EcommerceOptionsPage() {
                             </div>
 
                             {/* Main Content Card */}
-                            <div className="flex-1 min-h-0 max-w-4xl mx-auto w-full bg-white dark:bg-gray-800 rounded-2xl  border border-slate-200/60 dark:border-gray-700 p-3 overflow-hidden">
+                            <div className="lg:flex-1 lg:min-h-0 max-w-4xl mx-auto w-full bg-white dark:bg-gray-800 rounded-2xl  border border-slate-200/60 dark:border-gray-700 p-3 lg:overflow-hidden">
                                 <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-2">E-Commerce Bundle Options</h2>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2">

@@ -195,7 +195,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                     {/* Left Column - Hero Text */}
                     {/* Left Column - Hero Text */}
-                    <div className="max-w-xl mx-auto lg:mx-0 text-center lg:text-left relative z-10">
+                    <div className="max-w-xl mx-auto lg:mx-0 lg:ml-20 text-center lg:text-left relative z-10">
                         {/* Restored Static Color Effect (Glow) - Reduced Intensity */}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-teal-400/10 dark:bg-teal-500/5 rounded-full blur-[80px] -z-10" />
 

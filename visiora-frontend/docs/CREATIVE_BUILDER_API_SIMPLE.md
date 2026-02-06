@@ -186,7 +186,7 @@ PUT /api/creative-builder/projects/{project_id}
   "cta_label": "Buy Now",
   "caption": "Updated caption text...",
   "visual_styles": {
-    "colors": ["#FF5733"],
+    "colors": ["#FF5733"],  
     "fonts": ["Poppins"],
     "overlay": "modern",
     "filter": "warm"
@@ -264,9 +264,9 @@ Headers:
 ---
 
 ## 📝 Notes
-
+cccc----->>>>>>>>>><<<<<<<<>>>>>>>>
 - **GET APIs** are used to fetch data (platforms, projects, details)
-- **POST APIs** are used to create new data (upload, configure, generate)
+- **POST APIs** re used to create new data (upload, configure, generate)
 - **PUT APIs** are used to update existing data (edit creative)
 - **DELETE APIs** are used to remove data (delete project)
 
