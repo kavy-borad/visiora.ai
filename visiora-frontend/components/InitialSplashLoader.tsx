@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
+import { useTheme } from "@/lib/theme";
+
 export default function InitialSplashLoader({ onComplete }: { onComplete?: () => void }) {
     const [progress, setProgress] = useState(0);
+    const { theme } = useTheme();
 
     useEffect(() => {
         // Simulate loading progress
@@ -103,12 +106,12 @@ export default function InitialSplashLoader({ onComplete }: { onComplete?: () =>
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
-                        className="relative z-20 w-32 h-32"
+                        className="relative z-20 w-60 h-auto"
                     >
                         <img
-                            src="/loader-logo.png"
-                            alt="Visiora Logo"
-                            className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(20,184,166,0.5)]"
+                            src={theme === 'dark' ? "/logo-dark.svg" : "/logo-new.svg"}
+                            alt="ephotocart Logo"
+                            className="w-full h-full object-contain"
                         />
                     </motion.div>
                 </div>
@@ -120,9 +123,7 @@ export default function InitialSplashLoader({ onComplete }: { onComplete?: () =>
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
                 >
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                        GenStudio<span className="text-teal-500">.AI</span>
-                    </h1>
+
                     <p className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-[0.3em] uppercase">
                         Initializing Creative Engine
                     </p>

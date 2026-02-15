@@ -14,14 +14,16 @@ interface ComparisonSliderProps {
     slides: SlidePair[];
     aspectRatio?: string;
     slideDuration?: number; // Time in ms per slide
+    className?: string;
 }
 
 export default function ComparisonSlider({
     slides,
     aspectRatio = "3/4",
     slideDuration = 4000,
+    className = "",
 }: ComparisonSliderProps) {
-    const [sliderPosition, setSliderPosition] = useState(50);
+    const [sliderPosition, setSliderPosition] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +40,7 @@ export default function ComparisonSlider({
         const controls = animate(0, 100, {
             duration: 2.5,
             ease: "easeInOut",
-            delay: 1.5,
+            delay: 0.5, // Reduced delay for faster response
             onUpdate: (value) => {
                 if (!isDragging) setSliderPosition(value);
             },
@@ -113,7 +115,7 @@ export default function ComparisonSlider({
     return (
         <div
             ref={containerRef}
-            className={`relative w-full overflow-hidden rounded-2xl select-none cursor-ew-resize group shadow-2xl shadow-emerald-900/10 bg-white dark:bg-slate-900`}
+            className={`relative w-full h-full overflow-hidden rounded-2xl select-none cursor-ew-resize group shadow-2xl shadow-emerald-900/10 bg-white dark:bg-slate-900 ${className}`}
             style={{ aspectRatio }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleMouseDown}
@@ -136,27 +138,27 @@ export default function ComparisonSlider({
                             className="object-contain object-center"
                             priority
                         />
-                        <div className="absolute top-4 left-4 bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium tracking-wide border border-white/20 z-10 shadow-lg shadow-emerald-900/20">
-                            After
+                        {/* Before Image (Foreground - Clipped) */}
+                        <div
+                            className="absolute inset-0 w-full h-full"
+                            style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
+                        >
+                            <div className="absolute inset-0 w-full h-full bg-white dark:bg-slate-900 p-6">
+                                <Image
+                                    src={currentSlide.before}
+                                    alt="Before"
+                                    fill
+                                    className="object-contain object-center"
+                                    priority
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Before Image (Foreground - Clipped) */}
-                    <div
-                        className="absolute inset-0 w-full h-full"
-                        style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
-                    >
-                        <div className="absolute inset-0 w-full h-full bg-white dark:bg-slate-900 p-6">
-                            <Image
-                                src={currentSlide.before}
-                                alt="Before"
-                                fill
-                                className="object-contain object-center"
-                                priority
-                            />
-                        </div>
-                        <div className="absolute top-4 right-4 bg-slate-900/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium tracking-wide border border-white/20 z-10">
-                            Before
+                        {/* Comparison Badge - Dynamic Single Label */}
+                        <div className="absolute top-4 right-4 z-30 pointer-events-none">
+                            <div className="bg-black/60 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border border-white/10 shadow-lg transition-all duration-300">
+                                {sliderPosition < 50 ? "Original" : "AI Generated"}
+                            </div>
                         </div>
                     </div>
                 </motion.div>

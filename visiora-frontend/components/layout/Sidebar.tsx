@@ -11,8 +11,12 @@ import {
     Pin,
     PinOff,
     Wand2,
+    LogOut,
 } from "lucide-react";
+import { useThemeLogo } from "@/hooks/useThemeLogo";
+import logo from "@/public/Gemini_Generated_Image_8r5e1l8r5e1l8r5e_1.png";
 import { useSidebar } from "./SidebarContext";
+import { useTheme } from "@/lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SidebarProps {
@@ -29,6 +33,8 @@ const navItems = [
 
 export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
     const { isOpen, isPinned, togglePin, handleMouseEnter, handleMouseLeave } = useSidebar();
+    const { theme } = useTheme();
+    const themeLogoSrc = useThemeLogo(logo.src);
 
     return (
         <motion.aside
@@ -40,19 +46,21 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             onMouseLeave={handleMouseLeave}
         >
             {/* Logo Section */}
-            <div className={`h-16 flex items-center shrink-0 transition-all duration-300 ${isOpen ? 'px-6' : 'px-0 justify-center'}`}>
-                <Link href="/?view=landing" className="flex items-center gap-2.5 overflow-hidden">
-                    <img src="/logo.png" alt="GenStudio Logo" className="h-10 w-auto shrink-0" />
-                    <motion.div
-                        className="flex flex-col whitespace-nowrap"
+            <div className="h-16 flex items-center shrink-0 pl-3.5 relative">
+                <Link href="/?view=landing" className="flex items-center gap-3 overflow-hidden">
+                    <img
+                        src={themeLogoSrc}
+                        alt="Visiora Logo"
+                        className="h-10 w-10 shrink-0 object-contain"
+                    />
+                    <motion.span
                         initial={false}
-                        animate={{ opacity: isOpen ? 1 : 0, width: isOpen ? "auto" : 0 }}
-                        transition={{ duration: 0.2 }}
+                        animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 whitespace-nowrap absolute left-16"
                     >
-                        {isOpen && (
-                            <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none ml-1">GenStudio</h1>
-                        )}
-                    </motion.div>
+                        ephotocart
+                    </motion.span>
                 </Link>
             </div>
 

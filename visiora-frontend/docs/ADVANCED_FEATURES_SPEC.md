@@ -1,13 +1,13 @@
-# 🚀 Visiora Advanced Feature Specification: The "All-in-One" Marketing Engine
+// 🚀 Ephotocart Advanced Feature Specification: The "All-in-One" Marketing Engine
 
-This document outlines the detailed architecture for the transformative expansion of Visiora. We are moving from a "Product Image Generator" to an **End-to-End Content Production Console** for Marketers, Sellers, and Content Creators.
+This document outlines the detailed architecture for the transformative expansion of Ephotocart. We are moving from a "Product Image Generator" to an **End-to-End Content Production Console** for Marketers, Sellers, and Content Creators.
 
 ---
 
 ## 🏗️ Module 1: The "Visual Intelligence" Layer (First Step)
 *> Before we generate, we understand.*
 
-**Concept:** Instead of asking the user to describe their product perfectly, Visiora analyzes the uploaded raw image to understand context, mood, and potential.
+**Concept:** Instead of asking the user to describe their product perfectly, Ephotocart analyzes the uploaded raw image to understand context, mood, and potential.
 
 ### **The Flow:**
 1.  **User Action:** Uploads `raw_image.jpg` (e.g., a perfume bottle on a table).
@@ -32,7 +32,7 @@ This document outlines the detailed architecture for the transformative expansio
 ### **Step 2: Platform Selection & Auto-Mode**
 The user selects where this content is going.
 *   **Manual Mode:** User picks "Instagram Story", "LinkedIn Post", "Amazon Listing".
-*   **🚀 Auto Mode:** Visiora suggests:
+*   **🚀 Auto Mode:** Ephotocart suggests:
     *   *"This tall vertical image is perfect for **Reels/Stories**."*
     *   *"This high-contrast image will perform well on **Google Display**."*
 
@@ -59,7 +59,7 @@ The user selects where this content is going.
 
 ### **Step 6: Direct Publishing (The Ultimate Convenience)**
 *   **Integration:** Connect accounts (Instagram Business, Facebook Ads Manager).
-*   **Action:** Click `Schedule Post` or `Publish Now` directly from Visiora.
+*   **Action:** Click `Schedule Post` or `Publish Now` directly from Ephotocart.
 
 ---
 
@@ -103,7 +103,7 @@ The user selects where this content is going.
 
 ## ✅ Summary of User Value
 
-| Feature | The Problem It Solves | The Visiora Solution |
+| Feature | The Problem It Solves | The Ephotocart Solution |
 | :--- | :--- | :--- |
 | **Vision Layer** | "I don't know what prompt to write." | "Don't write. Just upload. We see what you need." |
 | **Ad Builder** | "I hate switching apps to add text." | "Edit, Brand, and Format right here." |

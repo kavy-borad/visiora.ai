@@ -1,6 +1,6 @@
 import api from "./axios";
 
-// Backend base URL for image storage
+// Visiora -> ephotocart
 const STORAGE_BASE_URL = "https://phpstack-1490006-6107283.cloudwaysapps.com";
 
 /**
@@ -518,7 +518,7 @@ export const galleryApi = {
      * @param filename - Filename for download
      */
     downloadImage: async (id: string, imageUrl: string, filename: string): Promise<ApiResponse<{ downloaded: boolean }>> => {
-        const safeFilename = `${(filename || 'visiora_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
+        const safeFilename = `${(filename || 'ephotocart_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
 
         try {
             console.log('⬇️ Downloading image:', id);

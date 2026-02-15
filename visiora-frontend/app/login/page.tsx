@@ -277,7 +277,7 @@ export default function LoginPage() {
                     </button>
 
                     <div className="w-full text-center text-[10px] text-slate-400">
-                        © 2026 Visiora AI. All rights reserved.
+                        © 2026 ephotocart. All rights reserved.
                     </div>
                 </div>
             </div>

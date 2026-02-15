@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Sparkles, Sun, Moon } from "lucide-react";
+import { useThemeLogo } from "@/hooks/useThemeLogo";
+import logo from "@/public/Gemini_Generated_Image_8r5e1l8r5e1l8r5e_1.png";
 
 interface AuthNavbarProps {
     isDarkMode?: boolean;
@@ -14,17 +16,16 @@ export default function AuthNavbar({
     onToggleDarkMode,
     currentPage
 }: AuthNavbarProps) {
+    const themeLogoSrc = useThemeLogo(logo.src);
     return (
         <header className={`w-full backdrop-blur-sm z-50 border-b transition-colors duration-300 ${isDarkMode
             ? "bg-slate-900/80 border-slate-700/50"
             : "bg-white/80 border-slate-100/50"
             }`}>
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-14 h-14 flex items-center justify-between">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="GenStudio Logo" className="h-10 w-auto" />
-                    <h2 className={`text-base sm:text-lg font-bold tracking-tight transition-colors duration-300 ${isDarkMode ? "text-white" : "text-slate-800"
-                        }`}>GenStudio</h2>
+                <Link href="/" className="flex items-center gap-2">
+                    <img src={themeLogoSrc} alt="Visiora Logo" className="h-10 w-10 relative z-10 opacity-90 transition-opacity object-contain" />
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">ephotocart</span>
                 </Link>
 
                 {/* Right Side */}

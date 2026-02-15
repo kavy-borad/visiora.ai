@@ -1,11 +1,11 @@
-# Deploying Visiora to a Production VPS (Ubuntu)
+# Deploying Ephotocart to a Production VPS (Ubuntu)
 
 This guide will help you deploy your Next.js application to a VPS (Virtual Private Server) like DigitalOcean, AWS EC2, or Hostinger.
 
 ## Prerequisites
 - A VPS running **Ubuntu 20.04** or **22.04/24.04**.
 - **Root access** (or sudo user) to the server.
-- A **Domain Name** (e.g., visiora.com) pointing to your server's IP address.
+- A **Domain Name** (e.g., ephotocart.com) pointing to your server's IP address.
 
 ---
 
@@ -47,7 +47,7 @@ sudo npm install -g pm2
 cd /var/www
 
 # Clone your repository (Replace with your actual GitHub URL)
-git clone https://github.com/YOUR_GITHUB_USERNAME/visiora-frontend.git html
+git clone https://github.com/YOUR_GITHUB_USERNAME/ephotocart-frontend.git html
 
 # Enter the directory
 cd html
@@ -72,7 +72,7 @@ We use PM2 to keep your app running in the background 24/7.
 
 ```bash
 # Start Next.js on port 3000
-pm2 start npm --name "visiora" -- start
+pm2 start npm --name "ephotocart" -- start
 
 # Save the list so it restarts on reboot
 pm2 save
@@ -147,5 +147,5 @@ cd /var/www/html
 git pull
 npm install
 npm run build
-pm2 restart visiora
+pm2 restart ephotocart
 ```

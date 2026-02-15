@@ -1,0 +1,11 @@
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .icon-text { font-family: 'Plus Jakarta Sans', Inter, -apple-system, sans-serif; font-weight: 800; }
+    </style>
+  </defs>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" class="icon-text" 
+        font-size="40" letter-spacing="-2" fill="#ffffff">
+    e
+  </text>
+</svg>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 // Defined Pairs matching the reference style
 const pairs = [
@@ -62,7 +62,29 @@ export default function MorphLoopVisuals({ direction = "left" }: { direction?: "
     const extendedPairs = [...pairs, ...pairs, ...pairs];
 
     return (
-        <div className="w-full h-full relative bg-white dark:bg-slate-900 overflow-hidden flex items-center justify-center select-none">
+        <div className="w-full h-full relative overflow-hidden flex items-center justify-center select-none">
+            <style jsx global>{`
+                @keyframes aiFadeIn {
+                    0%, 68% { opacity: 0; }
+                    72%, 96% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+                .animate-ai-cycle {
+                    animation: aiFadeIn 3s linear infinite;
+                    will-change: opacity;
+                    transform: translateZ(0);
+                }
+                @keyframes rawFadeOut {
+                    0%, 68% { opacity: 1; }
+                    72%, 96% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+                .animate-raw-cycle {
+                    animation: rawFadeOut 3s linear infinite;
+                    will-change: opacity;
+                    transform: translateZ(0);
+                }
+            `}</style>
 
             {/* Rotated Grid Wrapper - The "Cross" Effect */}
             <motion.div
@@ -81,14 +103,8 @@ export default function MorphLoopVisuals({ direction = "left" }: { direction?: "
                 <MarqueeColumn items={extendedPairs} duration={120} />
             </motion.div>
 
-            {/* The "Blend" Overlay - Vignette around the edges */}
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_45%,theme(colors.white)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_45%,theme(colors.slate.900)_100%)]" />
-
-            {/* Extra linear gradients for borders blending - Reduced size */}
-            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white dark:from-slate-900 to-transparent pointer-events-none" />
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none" />
+            {/* Bottom Gradient Only - To match user's preference */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
 
         </div>
     );
@@ -117,47 +133,51 @@ function MarqueeColumn({ items, duration, reverse = false }: { items: typeof pai
 }
 
 function MarqueeItem({ item, index }: { item: any, index: number }) {
-    const [showAi, setShowAi] = useState(false);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setShowAi((prev) => !prev);
-        }, 5500 + (index * 500)); // Staggered toggle timing
-
-        return () => clearInterval(interval);
-    }, [index]);
-
     return (
-        <div className="w-48 sm:w-60 aspect-[3/4] shrink-0 relative rounded-xl overflow-hidden border border-slate-200/20 dark:border-slate-800/20 shadow-lg bg-white dark:bg-slate-800 group">
-            <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                    key={showAi ? "ai" : "raw"}
-                    className="absolute inset-0 w-full h-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                >
-                    <Image
-                        src={showAi ? item.ai : item.raw}
-                        alt={showAi ? "AI Generated" : "Original"}
-                        fill
-                        className="object-cover"
-                    />
-                </motion.div>
-            </AnimatePresence>
+        <div className="w-48 sm:w-60 aspect-[3/4] shrink-0 relative rounded-xl overflow-hidden shadow-lg bg-white dark:bg-slate-800 group transform-gpu">
+            {/* Raw Image (Base) */}
+            <div className="absolute inset-0 w-full h-full">
+                <Image
+                    src={item.raw}
+                    alt="Original"
+                    fill
+                    className="object-cover"
+                    loading="lazy"
+                    sizes="(max-width: 768px) 33vw, 20vw"
+                />
+            </div>
+
+            {/* AI Image (Overlay) */}
+            <div className="absolute inset-0 w-full h-full animate-ai-cycle">
+                <Image
+                    src={item.ai}
+                    alt="AI Generated"
+                    fill
+                    className="object-cover"
+                    loading="lazy"
+                    sizes="(max-width: 768px) 33vw, 20vw"
+                />
+            </div>
 
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 pointer-events-none" />
 
-            {/* Label */}
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md shadow-sm transition-colors duration-300 ${showAi
-                    ? "bg-emerald-500/90 text-white"
-                    : "bg-white/20 text-white border border-white/20"
-                    }`}>
-                    {showAi ? "AI GENERATED" : "ORIGINAL"}
-                </span>
+            {/* Label - Compact & Safe from clipping */}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none">
+                {/* ORIGINAL Badge */}
+                <div className="absolute transition-opacity duration-300 animate-raw-cycle">
+                    <span className="text-[9px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-black/60 text-white border border-white/20 whitespace-nowrap">
+                        ORIGINAL
+                    </span>
+                </div>
+
+                {/* AI GENERATED Badge */}
+                <div className="absolute transition-opacity duration-300 animate-ai-cycle">
+                    <span className="text-[9px] items-center gap-1 font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-emerald-600/90 text-white border border-emerald-400/30 flex shadow-emerald-900/20 whitespace-nowrap">
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-100 shrink-0" />
+                        AI GENERATED
+                    </span>
+                </div>
             </div>
         </div>
     );

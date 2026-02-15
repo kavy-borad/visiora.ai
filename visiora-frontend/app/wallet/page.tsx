@@ -426,7 +426,7 @@ export default function WalletPage() {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY', // Replace with your Razorpay key
                 amount: amount * 100, // Razorpay expects amount in paise
                 currency: currency || 'INR',
-                name: 'Visiora',
+                name: 'ephotocart',
                 description: selectedPkg ? `${selectedPkg.totalCredits} Credits - ${selectedPkg.name}` : 'Add Money to Wallet',
                 order_id: razorpayOrderId,
                 handler: async function (razorpayResponse: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
@@ -462,7 +462,7 @@ export default function WalletPage() {
                     contact: '',
                 },
                 theme: {
-                    color: '#14b8a6', // Teal color matching Visiora theme
+                    color: '#14b8a6', // Teal color matching ephotocart theme
                 },
                 modal: {
                     ondismiss: function () {

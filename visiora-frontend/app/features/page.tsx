@@ -190,7 +190,7 @@ export default function FeaturesPage() {
                 {/* Footer */}
                 <footer className="shrink-0 border-t border-slate-200/60 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 py-2 px-4 transition-colors duration-300">
                     <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-                        <p className="text-slate-500 dark:text-gray-400 text-xs">© 2024 Visiora Inc. All rights reserved.</p>
+                        <p className="text-slate-500 dark:text-gray-400 text-xs">© 2026 ephotocart. All rights reserved.</p>
                         <div className="flex gap-4">
                             <Link href="#" className="text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 text-xs transition-colors">Privacy Policy</Link>
                             <Link href="#" className="text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 text-xs transition-colors">Terms of Service</Link>

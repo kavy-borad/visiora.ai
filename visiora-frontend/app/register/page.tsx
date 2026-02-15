@@ -162,7 +162,7 @@ export default function RegisterPage() {
                                 {success && <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">{success}</span>}
                             </div>
                         ) : (
-                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Start your creative journey with Visiora.</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Start your creative journey with ephotocart.</p>
                         )}
                     </div>
 
@@ -322,7 +322,7 @@ export default function RegisterPage() {
                     </button>
 
                     <div className="w-full text-center text-[10px] text-slate-400">
-                        © 2026 Visiora AI. All rights reserved.
+                        © 2026 ephotocart. All rights reserved.
                     </div>
                 </div>
             </div>

@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/theme";
 import { authApi, User as UserType } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useThemeLogo } from "@/hooks/useThemeLogo";
+import logo from "@/public/Gemini_Generated_Image_8r5e1l8r5e1l8r5e_1.png";
 
 interface PublicNavbarProps {
     activePage?: "features" | "solutions" | "pricing" | "results" | "get-started" | "home";
@@ -15,6 +17,7 @@ interface PublicNavbarProps {
 export default function PublicNavbar({ activePage }: PublicNavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
+    const themeLogoSrc = useThemeLogo(logo.src);
 
     // User authentication state
     const [user, setUser] = useState<UserType | null>(null);
@@ -64,11 +67,10 @@ export default function PublicNavbar({ activePage }: PublicNavbarProps) {
             <div className="relative max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 {/* Logo - Minimal & Modern */}
                 <Link href="/?view=landing" className="flex items-center gap-2 group relative z-50">
-                    <div className="relative flex items-center justify-center size-9">
-                        <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-lg opacity-40 group-hover:opacity-100 transition-opacity duration-500" />
-                        <img src="/logo.png" alt="GenStudio Logo" className="h-8 w-auto relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center justify-start h-10 w-auto gap-2">
+                        <img src={themeLogoSrc} alt="Visiora Logo" className="h-10 w-10 relative z-10 group-hover:scale-105 transition-all duration-300 object-contain" />
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">ephotocart</span>
                     </div>
-                    <span className="text-slate-900 dark:text-white text-lg font-bold tracking-tight">GenStudio</span>
                 </Link>
 
                 {/* Navigation - Clean, Airy, Minimal Hover */}

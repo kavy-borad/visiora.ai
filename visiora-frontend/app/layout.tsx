@@ -16,10 +16,10 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Visiora - AI Image Generation",
+  title: "ephotocart - Smart Photo Solutions",
   description: "Upload an image and get professional variations powered by AI",
   icons: {
-    icon: '/logo.png', // Fix favicon error by using existing logo
+    icon: '/logo-new.svg', // Fix favicon error by using existing logo
   },
 };
 

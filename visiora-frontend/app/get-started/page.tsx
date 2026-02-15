@@ -104,14 +104,14 @@ export default function GetStartedPage() {
             <footer className="shrink-0 relative z-10 border-t border-slate-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 py-3 sm:py-4 backdrop-blur-sm transition-colors duration-300">
                 <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
                     <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 text-[10px] sm:text-xs md:text-sm font-medium text-slate-500 dark:text-gray-400">
-                        <a className="transition-colors hover:text-teal-600 dark:hover:text-teal-400" href="mailto:contact@visiora.com">contact@visiora.com</a>
+                        <a className="transition-colors hover:text-teal-600 dark:hover:text-teal-400" href="mailto:contact@ephotocart.com">contact@ephotocart.com</a>
                         <span className="hidden sm:block h-1 w-1 rounded-full bg-slate-300 dark:bg-gray-600"></span>
                         <a className="transition-colors hover:text-teal-600 dark:hover:text-teal-400" href="tel:+15551234567">+1 (555) 123-4567</a>
                         <span className="hidden md:block h-1 w-1 rounded-full bg-slate-300 dark:bg-gray-600"></span>
                         <span className="hidden md:inline text-slate-400 dark:text-gray-500">123 AI Street, Tech City</span>
                     </div>
                     <div className="mt-2 sm:mt-3 text-[10px] sm:text-xs text-slate-400 dark:text-gray-500">
-                        <p>© 2024 Visiora Inc. All rights reserved.</p>
+                        <p>© 2026 ephotocart. All rights reserved.</p>
                     </div>
                 </div>
             </footer>

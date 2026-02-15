@@ -180,7 +180,7 @@ export default function AddMoneyPage() {
                     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
                     amount: orderData.amount ? orderData.amount * 100 : numAmount * 100, // Amount is in paise
                     currency: orderData.currency || currency,
-                    name: 'Visiora',
+                    name: 'ephotocart',
                     description: `${calculatedCredits} Credits`,
                     order_id: razorpayOrderId, // Pass the ID received from backend
                     handler: async function (razorpayResponse: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {

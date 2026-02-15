@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const imageUrl = searchParams.get('url');
-        const filename = searchParams.get('filename') || 'visiora_image.jpg';
+        const filename = searchParams.get('filename') || 'ephotocart_image.jpg';
 
         if (!imageUrl) {
             return NextResponse.json(
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         // Fetch the image from the external URL
         const imageResponse = await fetch(imageUrl, {
             headers: {
-                'User-Agent': 'Visiora-Download-Proxy/1.0',
+                'User-Agent': 'ephotocart-Download-Proxy/1.0',
             },
         });
 

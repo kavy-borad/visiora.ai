@@ -338,7 +338,7 @@ export default function LandingPage() {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-br from-teal-400/20 to-emerald-300/20 dark:from-teal-500/10 dark:to-emerald-500/10 blur-[90px] rounded-full -z-10 pointer-events-none" />
 
                         {/* Comparison Slider - Blended Background (No Border) */}
-                        <div className="relative z-10 rounded-3xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm p-4 sm:p-5 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md lg:max-w-full mx-auto h-[600px] flex items-center">
+                        <div className="relative z-10 rounded-3xl p-4 sm:p-5 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md lg:max-w-full mx-auto h-[600px] flex items-center">
                             <LandingVisuals />
                         </div>
                     </motion.div>

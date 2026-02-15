@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Sparkles } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
+import { useState } from "react";
+import ComparisonSlider from "./ComparisonSlider";
 
 // Standard pairs
 const col1 = [
@@ -60,122 +62,179 @@ const col2 = [
     }
 ];
 
-export default function LandingVisuals() {
-    return (
-        <div className="w-full h-full relative p-4 flex justify-center gap-3 sm:gap-5 overflow-hidden masked-gradient">
-            {/* Column 1 - Continuous Scroll Up */}
-            <motion.div
-                className="w-1/2 flex flex-col gap-5"
-                initial={{ y: 0 }}
-                animate={{ y: "-50%" }}
-                transition={{
-                    repeat: Infinity,
-                    duration: 20,
-                    ease: "linear"
-                }}
-            >
-                {[...col1, ...col1].map((item, idx) => (
-                    <GridItem key={`${item.id}-${idx}`} item={item} index={idx} />
-                ))}
-            </motion.div>
+// Combine all items effectively for marquee usage
+const allItems = [...col1, ...col2];
 
-            {/* Column 2 - Continuous Scroll Down (Offset) */}
+export default function LandingVisuals() {
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+
+    // Duplicate pairs to create enough length for seamless looping
+    const extendedItems1 = [...col1, ...col1, ...col1, ...col1];
+    const extendedItems2 = [...col2, ...col2, ...col2, ...col2];
+
+    return (
+        <>
+            <div className="w-full h-full relative flex justify-center overflow-hidden"
+                style={{
+                    WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+                    maskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+                    WebkitMaskComposite: 'destination-in',
+                    maskComposite: 'intersect',
+                }}
+            >
+                <style jsx global>{`
+                    @keyframes aiFadeIn {
+                        0%, 45% { opacity: 0; }
+                        55%, 90% { opacity: 1; }
+                        100% { opacity: 0; }
+                    }
+                    @keyframes rawFadeOut {
+                        0%, 45% { opacity: 1; }
+                        55%, 90% { opacity: 0; }
+                        100% { opacity: 1; }
+                    }
+                    .animate-ai-cycle {
+                        animation: aiFadeIn 4s ease-in-out infinite;
+                        will-change: opacity;
+                        transform: translate3d(0,0,0);
+                        backface-visibility: hidden;
+                    }
+                    .animate-raw-cycle {
+                        animation: rawFadeOut 4s ease-in-out infinite;
+                        will-change: opacity;
+                        transform: translate3d(0,0,0);
+                        backface-visibility: hidden;
+                    }
+                `}</style>
+
+                {/* Straight columns - no rotation */}
+                <div className="w-full h-full flex justify-center gap-3 sm:gap-5 p-4">
+                    {/* Column 1 - Marquee Up */}
+                    <MarqueeColumn items={extendedItems1} duration={40} reverse={false} onItemClick={setSelectedItem} />
+
+                    {/* Column 2 - Marquee Down */}
+                    <MarqueeColumn items={extendedItems2} duration={50} reverse={true} onItemClick={setSelectedItem} />
+                </div>
+            </div>
+
+            {/* Modal Overlay */}
+            <AnimatePresence>
+                {selectedItem && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-8"
+                        onClick={() => setSelectedItem(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="relative w-full max-w-lg bg-transparent rounded-3xl overflow-hidden shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setSelectedItem(null)}
+                                className="absolute top-4 right-4 z-50 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-colors border border-white/20"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            {/* Comparison Slider */}
+                            <div className="w-full aspect-[3/4] sm:aspect-[4/5] max-h-[85vh]">
+                                <ComparisonSlider
+                                    slides={[{ before: selectedItem.raw, after: selectedItem.ai }]}
+                                    aspectRatio="auto"
+                                />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+}
+
+function MarqueeColumn({ items, duration, reverse = false, onItemClick }: { items: any[], duration: number, reverse?: boolean, onItemClick: (item: any) => void }) {
+    return (
+        <div className="relative w-1/2 h-full overflow-hidden flex flex-col gap-6 transform-gpu">
             <motion.div
-                className="w-1/2 flex flex-col gap-5 pt-4"
-                initial={{ y: "-50%" }}
-                animate={{ y: 0 }}
+                className="flex flex-col gap-5"
+                initial={{ y: reverse ? "-50%" : "0%" }}
+                animate={{ y: reverse ? "0%" : "-50%" }}
                 transition={{
+                    duration: duration,
                     repeat: Infinity,
-                    duration: 25,
                     ease: "linear"
                 }}
             >
-                {[...col2, ...col2].map((item, idx) => (
-                    <GridItem key={`${item.id}-${idx}`} item={item} index={idx + 2} />
+                {items.map((item, idx) => (
+                    <GridItem key={`mq-${item.id}-${idx}`} item={item} onClick={() => onItemClick(item)} />
                 ))}
             </motion.div>
         </div>
     );
 }
 
-function GridItem({ item, index }: { item: any, index: number }) {
-    const [showAi, setShowAi] = useState(false);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setShowAi(prev => !prev);
-        }, 4000 + (index * 1500)); // Staggered toggle timing
-
-        return () => clearInterval(interval);
-    }, [index]);
-
+// Optimized GridItem using CSS animations
+function GridItem({ item, onClick }: { item: any, onClick: () => void }) {
     return (
-        <div className={`relative w-full aspect-[2/3] min-h-[320px] rounded-2xl overflow-hidden bg-gray-200 dark:bg-slate-800 border border-white/40 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-black/40 group`}>
-            {/* Background Pattern */}
+        <div
+            onClick={onClick}
+            className={`relative w-full aspect-[4/5] min-h-[280px] rounded-2xl overflow-hidden bg-gray-200 dark:bg-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 group transform-gpu cursor-pointer hover:ring-2 hover:ring-emerald-500/50 transition-all active:scale-95`}
+        >
+            {/* Background Pattern - Static */}
             <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat" />
 
-            <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                    key={showAi ? "ai" : "raw"}
-                    className="absolute inset-0 w-full h-full"
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.2, ease: "easeInOut" }}
-                >
+            {/* Images Container */}
+            <div className="absolute inset-0 w-full h-full">
+                {/* Raw Image (Base) */}
+                <Image
+                    src={item.raw}
+                    alt="Original"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover"
+                    loading="lazy"
+                />
+
+                {/* AI Image (Overlay) */}
+                <div className="absolute inset-0 w-full h-full animate-ai-cycle">
                     <Image
-                        src={showAi ? item.ai : item.raw}
-                        alt={showAi ? "AI" : "Raw"}
+                        src={item.ai}
+                        alt="AI Generated"
                         fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover"
+                        loading="lazy"
                     />
-                </motion.div>
-            </AnimatePresence>
+                </div>
+            </div>
 
-            {/* Static Overlay to prevent flickering */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60 pointer-events-none" />
+            {/* Static Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 pointer-events-none" />
 
-            {/* Badge - Outside AnimatePresence for stability */}
-            {/* Badge - Outside AnimatePresence for stability */}
-            <div className="absolute bottom-3 right-3 z-10">
-                {/* Static Container - Fixed dimensions */}
-                <div className="relative w-[92px] h-[24px]">
-
-                    {/* Background Layer 1: ORIGINAL (Dark) - Fades out */}
-                    <div
-                        className={`absolute inset-0 rounded-full backdrop-blur-md shadow-sm border border-white/10 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-opacity
-                        ${showAi ? 'opacity-0' : 'opacity-100'}
-                        `}
-                    />
-
-                    {/* Background Layer 2: GENERATED (White) - Fades in */}
-                    <div
-                        className={`absolute inset-0 rounded-full backdrop-blur-md shadow-sm border border-white/20 bg-white/95 transition-opacity duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-opacity
-                        ${showAi ? 'opacity-100' : 'opacity-0'}
-                        `}
-                    />
-
-                    {/* Content Layer: Original */}
-                    <div
-                        className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]
-                        ${!showAi ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}
-                        `}
-                    >
-                        <span className="text-[9px] font-extrabold tracking-widest uppercase leading-none text-white/90">
-                            ORIGINAL
+            {/* Animated Badge - Ultra Compact & Premium */}
+            <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
+                {/* ORIGINAL Badge */}
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-raw-cycle flex items-center justify-end">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 shadow-lg">
+                        <div className="w-1 h-1 rounded-full bg-white/80 shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                        <span className="text-[9px] font-semibold tracking-wide text-white/90 uppercase">
+                            Original
                         </span>
                     </div>
+                </div>
 
-                    {/* Content Layer: Generated */}
-                    <div
-                        className={`absolute inset-0 flex items-center justify-center gap-1.5 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]
-                        ${showAi ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}
-                        `}
-                    >
-                        <Sparkles className="w-2.5 h-2.5 text-teal-700" />
-                        <span className="text-[9px] font-extrabold tracking-widest uppercase leading-none text-teal-700">
-                            GENERATED
+                {/* AI GENERATED Badge */}
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-ai-cycle flex items-center justify-end">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-black/80 to-slate-900/80 backdrop-blur-xl rounded-full border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-400 fill-emerald-400/20" />
+                        <span className="text-[9px] font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-emerald-200 uppercase">
+                            AI Generated
                         </span>
                     </div>
                 </div>

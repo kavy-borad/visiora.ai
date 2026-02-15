@@ -1027,7 +1027,7 @@ export default function SettingsPage() {
                 <div className="divide-y divide-slate-100 dark:divide-gray-700 max-h-60 overflow-y-auto">
                     {[
                         { title: "Image Generation Complete", desc: "Your 'Futuristic City' batch has finished processing.", time: "2m ago", unread: true },
-                        { title: "Welcome to Visiora", desc: "Thanks for joining! Start creating amazing visuals.", time: "1h ago", unread: false },
+                        { title: "Welcome to Ephotocart", desc: "Thanks for joining! Start creating amazing visuals.", time: "1h ago", unread: false },
                         { title: "Credits Added", desc: "You received 5 promotional credits.", time: "1d ago", unread: false }
                     ].map((item, i) => (
                         <div key={i} className={`p-4 hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors flex gap-3 ${item.unread ? 'bg-slate-50/50 dark:bg-gray-800/80' : ''}`}>

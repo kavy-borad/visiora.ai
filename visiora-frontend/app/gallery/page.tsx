@@ -220,7 +220,7 @@ export default function GalleryPage() {
             return;
         }
 
-        const filename = `${(alt || 'visiora_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
+        const filename = `${(alt || 'ephotocart_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
         console.log('⬇️ Download requested:', { id, src, filename });
 
         // Handle Base64 images directly

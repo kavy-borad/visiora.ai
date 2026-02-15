@@ -97,7 +97,7 @@ export default function Header({
                 // Add welcome notification
                 const welcomeNotification: Notification = {
                     id: Date.now().toString(),
-                    message: `Welcome to Visiora, ${firstName}!`,
+                    message: `Welcome to ephotocart, ${firstName}!`,
                     time: 'Just now'
                 };
                 const newNotifications = [welcomeNotification];
@@ -243,12 +243,14 @@ export default function Header({
                         {item.href ? (
                             <Link
                                 href={item.href}
-                                className="text-slate-500 dark:text-gray-400 hover:text-teal-600 cursor-pointer transition-colors"
+                                className="text-slate-500 dark:text-gray-400 hover:text-teal-600 cursor-pointer transition-colors flex items-center gap-1"
                             >
-                                {item.label}
+                                {item.label === "Home" ? <Home className="w-5 h-5 -ml-1" /> : item.label}
                             </Link>
                         ) : (
-                            <span className="text-slate-900 dark:text-white">{item.label}</span>
+                            <span className="text-slate-900 dark:text-white flex items-center gap-1">
+                                {item.label === "Home" ? <Home className="w-5 h-5 -ml-1" /> : item.label}
+                            </span>
                         )}
                     </div>
                 ))}

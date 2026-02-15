@@ -9,9 +9,8 @@ export default function Branding({ className = "" }: { className?: string }) {
 
     return (
         <Link href="/" className={`flex items-center gap-2.5 ${className}`}>
-            <img src="/logo.png" alt="Visiora Logo" className="h-12 w-auto" />
-            <h2 className={`text-lg font-bold tracking-tight transition-colors duration-300 ${isDarkMode ? "text-white" : "text-slate-900"
-                }`}>Visiora</h2>
+            <img src={isDarkMode ? "/logo-dark.svg" : "/logo-new.svg"} alt="ephotocart Logo" className="h-12 w-auto" />
+
         </Link>
     );
 }

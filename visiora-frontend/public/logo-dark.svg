@@ -1,0 +1,20 @@
+<svg width="240" height="80" viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .main-text { font-family: 'Plus Jakarta Sans', Inter, -apple-system, sans-serif; font-weight: 800; }
+      .sub-text { font-family: 'Plus Jakarta Sans', Inter, -apple-system, sans-serif; font-weight: 500; }
+    </style>
+  </defs>
+  
+  <!-- Main Title -->
+  <text x="50%" y="45" text-anchor="middle" class="main-text" 
+        font-size="42" letter-spacing="-1.5" fill="#ffffff">
+    ephotocart
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="50%" y="68" text-anchor="middle" class="sub-text" 
+        font-size="13" letter-spacing="1.5" fill="#94a3b8">
+    Smart Photo Solutions
+  </text>
+</svg>
